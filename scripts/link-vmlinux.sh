@@ -66,13 +66,6 @@ gen_symversions()
 			cat ${o}.symversions >> .tmp_symversions.lds
 		fi
 	done
-
-	# vivo ABI compat: vendor modules are built against a different kernel
-	# revision; fold in CRC replacements from vendor_crc_overrides.lds so
-	# the shipped modules pass their modversions checks.
-	if [ -f ${objtree}/vendor_crc_overrides.lds ] ; then
-		cat ${objtree}/vendor_crc_overrides.lds >> .tmp_symversions.lds
-	fi
 }
 
 # Link of vmlinux.o used for section mismatch analysis
