@@ -13,6 +13,18 @@
 #include <linux/mm_types.h>
 #include <linux/sched.h>
 #include <linux/types.h>
+#include <linux/build_bug.h>
+#include <linux/mmzone.h>
+
+/* Verified against the stock X80 Image and shipped system_heap.ko. */
+static_assert(sizeof(struct zone) == 0x880);
+static_assert(offsetof(struct zone, name) == 0x80);
+static_assert(offsetof(struct zone, free_area) == 0xc0);
+static_assert(offsetof(struct zone, vm_stat) == 0x7c0);
+static_assert(offsetof(struct pglist_data, node_zonelists) == 0x1980);
+static_assert(MIGRATE_TYPES == 9);
+static_assert(NR_VM_ZONE_STAT_ITEMS == 17);
+static_assert(PB_migratetype_bits == 7);
 
 /* Optional THP-pool allocation: NULL makes system_heap use its normal path. */
 struct page *alloc_pages_from_thp_pool(gfp_t gfp_mask, unsigned int order,

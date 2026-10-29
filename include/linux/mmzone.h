@@ -63,6 +63,12 @@ enum migratetype {
 #endif
 	MIGRATE_PCPTYPES, /* the number of types on the pcp lists */
 	MIGRATE_HIGHATOMIC = MIGRATE_PCPTYPES,
+	/* X80 stock allocator ABI: retain the vendor freelist indices.
+	 * These optional pools remain inactive in this source tree.
+	 */
+	MIGRATE_RSCIS,
+	MIGRATE_RSCIB,
+	MIGRATE_THPPOOL,
 #ifdef CONFIG_MEMORY_ISOLATION
 	MIGRATE_ISOLATE,	/* can't allocate from here */
 #endif
@@ -155,6 +161,9 @@ enum zone_stat_item {
 	NR_ZONE_INACTIVE_FILE,
 	NR_ZONE_ACTIVE_FILE,
 	NR_ZONE_UNEVICTABLE,
+	/* Stock vendor accounting indices; optional policies stay disabled. */
+	NR_ZONE_VITAL,
+	NR_ZONE_STAPLE,
 	NR_ZONE_WRITE_PENDING,	/* Count of dirty, writeback and unstable pages */
 	NR_MLOCK,		/* mlock()ed pages found and moved off LRU */
 	NR_PAGETABLE,		/* used for pagetables */
@@ -162,6 +171,9 @@ enum zone_stat_item {
 	NR_BOUNCE,
 	NR_ZSPAGES,		/* allocated in zsmalloc */
 	NR_FREE_CMA_PAGES,
+	NR_RSCIS_FREE,
+	NR_RSCIB_FREE,
+	NR_THP_POOL_PAGES,
 	NR_VM_ZONE_STAT_ITEMS };
 
 enum node_stat_item {
@@ -510,6 +522,10 @@ struct zone {
 	unsigned long		cma_pages;
 #endif
 
+	/* X80 init_thp_pool accesses its reserved-block counter at 0x78.
+	 * Keep zero while the optional vendor THP pool is unavailable.
+	 */
+	unsigned long		thp_pool_reserved_blocks;
 	const char		*name;
 
 #ifdef CONFIG_MEMORY_ISOLATION

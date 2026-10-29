@@ -1155,12 +1155,17 @@ const char * const vmstat_text[] = {
 	"nr_zone_inactive_file",
 	"nr_zone_active_file",
 	"nr_zone_unevictable",
+	"nr_zone_vital",
+	"nr_zone_staple",
 	"nr_zone_write_pending",
 	"nr_mlock",
 	"nr_page_table_pages",
 	"nr_bounce",
 	"nr_zspages",
 	"nr_free_cma",
+	"nr_RSCISF",
+	"nr_RSCIBF",
+	"nr_thp_pool_pages",
 
 	/* enum numa_stat_item counters */
 #ifdef CONFIG_NUMA

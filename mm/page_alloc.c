@@ -314,6 +314,9 @@ const char * const migratetype_names[MIGRATE_TYPES] = {
 	"CMA",
 #endif
 	"HighAtomic",
+	"RSCIS",
+	"RSCIB",
+	"ThpPool",
 #ifdef CONFIG_MEMORY_ISOLATION
 	"Isolate",
 #endif
@@ -2444,6 +2447,10 @@ static int fallbacks[MIGRATE_TYPES][3] = {
 #ifdef CONFIG_CMA
 	[MIGRATE_CMA]         = { MIGRATE_TYPES }, /* Never used */
 #endif
+	/* ABI-only vendor pools are never populated by this allocator. */
+	[MIGRATE_RSCIS]       = { MIGRATE_TYPES },
+	[MIGRATE_RSCIB]       = { MIGRATE_TYPES },
+	[MIGRATE_THPPOOL]     = { MIGRATE_TYPES },
 #ifdef CONFIG_MEMORY_ISOLATION
 	[MIGRATE_ISOLATE]     = { MIGRATE_TYPES }, /* Never used */
 #endif
@@ -5555,13 +5562,16 @@ static bool show_mem_node_skip(unsigned int flags, int nid, nodemask_t *nodemask
 
 #define K(x) ((x) << (PAGE_SHIFT-10))
 
-static void show_migration_types(unsigned char type)
+static void show_migration_types(unsigned int type)
 {
 	static const char types[MIGRATE_TYPES] = {
 		[MIGRATE_UNMOVABLE]	= 'U',
 		[MIGRATE_MOVABLE]	= 'M',
 		[MIGRATE_RECLAIMABLE]	= 'E',
 		[MIGRATE_HIGHATOMIC]	= 'H',
+		[MIGRATE_RSCIS]		= 'S',
+		[MIGRATE_RSCIB]		= 'B',
+		[MIGRATE_THPPOOL]		= 'T',
 #ifdef CONFIG_CMA
 		[MIGRATE_CMA]		= 'C',
 #endif
@@ -5748,7 +5758,7 @@ void show_free_areas(unsigned int filter, nodemask_t *nodemask)
 	for_each_populated_zone(zone) {
 		unsigned int order;
 		unsigned long nr[MAX_ORDER], flags, total = 0;
-		unsigned char types[MAX_ORDER];
+		unsigned int types[MAX_ORDER];
 
 		if (show_mem_node_skip(filter, zone_to_nid(zone), nodemask))
 			continue;

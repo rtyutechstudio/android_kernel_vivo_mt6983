@@ -13,12 +13,13 @@
 
 #include <linux/types.h>
 
-#define PB_migratetype_bits 3
+/* X80 stock set_pageblock_migratetype uses a 0x7f mask; skip is bit 7. */
+#define PB_migratetype_bits 7
 /* Bit indices that affect a whole block of pages */
 enum pageblock_bits {
 	PB_migrate,
 	PB_migrate_end = PB_migrate + PB_migratetype_bits - 1,
-			/* 3 bits required for migrate types */
+			/* 7 bits retained for the stock vendor ABI */
 	PB_migrate_skip,/* If set the block is skipped by compaction */
 
 	/*
