@@ -1,3 +1,0 @@
-__crc_pci_slots_kset = 0xb0e133f9;
-__crc_pci_create_slot = 0xc04ba6d3;
-__crc_pci_destroy_slot = 0x9f171d1d;

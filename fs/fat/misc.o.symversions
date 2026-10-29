@@ -1,4 +1,0 @@
-__crc___fat_fs_error = 0x33da9cda;
-__crc_fat_time_unix2fat = 0x9eff80bc;
-__crc_fat_truncate_time = 0x2c34a290;
-__crc_fat_update_time = 0x7d1da0de;

@@ -1,3 +1,0 @@
-__crc___blkdev_driver_ioctl = 0x2ccfbfaa;
-__crc_blkdev_compat_ptr_ioctl = 0x2eb3bc1a;
-__crc_blkdev_ioctl = 0x90302758;

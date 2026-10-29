@@ -1,6 +1,0 @@
-__crc_ipt_alloc_initial_table = 0xb8b44999;
-__crc_ipt_register_table = 0x4d36e005;
-__crc_ipt_unregister_table = 0xc3000df5;
-__crc_ipt_unregister_table_pre_exit = 0x41aaea3c;
-__crc_ipt_unregister_table_exit = 0x2166eae1;
-__crc_ipt_do_table = 0x73c7face;

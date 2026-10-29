@@ -1,7 +1,0 @@
-__crc_edac_pci_alloc_ctl_info = 0x6c48e791;
-__crc_edac_pci_free_ctl_info = 0x18513b6a;
-__crc_edac_pci_alloc_index = 0x0c32ff8a;
-__crc_edac_pci_add_device = 0x1a83fceb;
-__crc_edac_pci_del_device = 0x4f65c9c1;
-__crc_edac_pci_create_generic_ctl = 0xbddfd8ff;
-__crc_edac_pci_release_generic_ctl = 0xdaf4d7b9;

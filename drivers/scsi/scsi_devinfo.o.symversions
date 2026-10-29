@@ -1,5 +1,0 @@
-__crc_scsi_dev_info_list_add_keyed = 0x2733eaf7;
-__crc_scsi_dev_info_list_del_keyed = 0xccfd2ebc;
-__crc_scsi_get_device_flags_keyed = 0xa4740ad1;
-__crc_scsi_dev_info_add_list = 0x204c5067;
-__crc_scsi_dev_info_remove_list = 0x97bdfa60;

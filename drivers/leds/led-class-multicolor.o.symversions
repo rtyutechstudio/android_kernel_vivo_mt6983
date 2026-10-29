@@ -1,5 +1,0 @@
-__crc_led_mc_calc_color_components = 0xb3c6f106;
-__crc_led_classdev_multicolor_register_ext = 0xdfb8bb87;
-__crc_led_classdev_multicolor_unregister = 0x91c79029;
-__crc_devm_led_classdev_multicolor_register_ext = 0x7bfc081c;
-__crc_devm_led_classdev_multicolor_unregister = 0xb3410a26;

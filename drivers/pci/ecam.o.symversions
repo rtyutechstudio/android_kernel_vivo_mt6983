@@ -1,4 +1,0 @@
-__crc_pci_ecam_create = 0x8a704ca0;
-__crc_pci_ecam_free = 0x531ae3d7;
-__crc_pci_ecam_map_bus = 0xd834c778;
-__crc_pci_generic_ecam_ops = 0xd7f879b0;

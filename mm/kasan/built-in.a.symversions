@@ -1,5 +1,0 @@
-__crc___kasan_kmalloc = 0xc4c43b02;
-__crc_kasan_save_enable_multi_shot = 0x97645739;
-__crc_kasan_restore_multi_shot = 0x47f78877;
-__crc_kasan_flag_enabled = 0xa6f6226c;
-__crc_kasan_flag_async = 0xafe28114;

@@ -1,5 +1,0 @@
-__crc_of_icc_bulk_get = 0x2e919fa9;
-__crc_icc_bulk_put = 0x7c3d8a4b;
-__crc_icc_bulk_set_bw = 0x9af49514;
-__crc_icc_bulk_enable = 0x38268b62;
-__crc_icc_bulk_disable = 0x8dd218b0;

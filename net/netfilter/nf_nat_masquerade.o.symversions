@@ -1,4 +1,0 @@
-__crc_nf_nat_masquerade_ipv4 = 0xd66c51d5;
-__crc_nf_nat_masquerade_ipv6 = 0xf93094e8;
-__crc_nf_nat_masquerade_inet_register_notifiers = 0x3bc17c49;
-__crc_nf_nat_masquerade_inet_unregister_notifiers = 0xd9c25654;

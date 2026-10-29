@@ -1,2 +1,0 @@
-__crc_hisi_reset_init = 0x0f388f08;
-__crc_hisi_reset_exit = 0x272e9d77;

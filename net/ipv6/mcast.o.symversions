@@ -1,4 +1,0 @@
-__crc_ipv6_sock_mc_join = 0x517814c3;
-__crc_ipv6_sock_mc_drop = 0xd30ec987;
-__crc_ipv6_dev_mc_inc = 0x84fe4399;
-__crc_ipv6_dev_mc_dec = 0x5c028fa7;

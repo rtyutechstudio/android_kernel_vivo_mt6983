@@ -1,4 +1,0 @@
-__crc_sha224_zero_message_hash = 0x946dd559;
-__crc_sha256_zero_message_hash = 0x1fa1d95c;
-__crc_crypto_sha256_update = 0x28303a10;
-__crc_crypto_sha256_finup = 0x5ef4842e;

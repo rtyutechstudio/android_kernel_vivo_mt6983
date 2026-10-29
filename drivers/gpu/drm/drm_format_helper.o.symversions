@@ -1,7 +1,0 @@
-__crc_drm_fb_memcpy = 0xda560176;
-__crc_drm_fb_memcpy_dstclip = 0xf5622eca;
-__crc_drm_fb_swab = 0xa85ecd93;
-__crc_drm_fb_xrgb8888_to_rgb565 = 0x18ca38c4;
-__crc_drm_fb_xrgb8888_to_rgb565_dstclip = 0x88713e4f;
-__crc_drm_fb_xrgb8888_to_rgb888_dstclip = 0x56641135;
-__crc_drm_fb_xrgb8888_to_gray8 = 0x25d614af;

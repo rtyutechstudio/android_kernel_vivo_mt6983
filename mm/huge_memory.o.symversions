@@ -1,3 +1,0 @@
-__crc_is_transparent_hugepage = 0x0ea37e79;
-__crc_thp_get_unmapped_area = 0x27074505;
-__crc_vmf_insert_pfn_pmd_prot = 0x19a262ab;

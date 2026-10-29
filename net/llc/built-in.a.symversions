@@ -1,9 +1,0 @@
-__crc_llc_sap_list = 0x52d7b2fd;
-__crc_llc_sap_find = 0xbb76d972;
-__crc_llc_sap_open = 0x54e57e7b;
-__crc_llc_sap_close = 0xf96d5a64;
-__crc_llc_add_pack = 0x2cbbe044;
-__crc_llc_remove_pack = 0x38b92846;
-__crc_llc_set_station_handler = 0x29a714ab;
-__crc_llc_mac_hdr_init = 0xa8a04528;
-__crc_llc_build_and_send_ui_pkt = 0x0615f995;

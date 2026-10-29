@@ -1,4 +1,0 @@
-__crc_ttm_mem_glob = 0x2a342c7a;
-__crc_ttm_mem_global_free = 0xbb9f1f39;
-__crc_ttm_mem_global_alloc = 0x40790477;
-__crc_ttm_round_pot = 0x6052860c;

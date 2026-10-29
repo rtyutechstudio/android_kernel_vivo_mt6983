@@ -1,5 +1,0 @@
-__crc_qca_read_soc_version = 0x6e4f8cf4;
-__crc_qca_send_pre_shutdown_cmd = 0x1f07c8e2;
-__crc_qca_set_bdaddr_rome = 0x74972ef3;
-__crc_qca_uart_setup = 0xafd0e179;
-__crc_qca_set_bdaddr = 0x5cdfbafc;

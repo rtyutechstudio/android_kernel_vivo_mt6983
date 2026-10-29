@@ -1,4 +1,0 @@
-__crc_proc_create_net_data = 0x03dc112d;
-__crc_proc_create_net_data_write = 0xa289b1b1;
-__crc_proc_create_net_single = 0x93cd291c;
-__crc_proc_create_net_single_write = 0x2e0d0cc8;

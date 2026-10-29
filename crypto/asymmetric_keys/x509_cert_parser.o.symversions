@@ -1,3 +1,0 @@
-__crc_x509_free_certificate = 0x60f5546b;
-__crc_x509_cert_parse = 0x76360d20;
-__crc_x509_decode_time = 0x998d79d6;

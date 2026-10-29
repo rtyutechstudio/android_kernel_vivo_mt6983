@@ -1,4 +1,0 @@
-__crc_drm_vblank_work_schedule = 0x6fcf3c22;
-__crc_drm_vblank_work_cancel_sync = 0xf173c580;
-__crc_drm_vblank_work_flush = 0xd7884a00;
-__crc_drm_vblank_work_init = 0x4f80a16c;

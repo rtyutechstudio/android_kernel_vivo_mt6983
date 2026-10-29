@@ -1,5 +1,0 @@
-__crc_inet_peer_base_init = 0x38708e25;
-__crc_inet_getpeer = 0x6d04891d;
-__crc_inet_putpeer = 0x1b92e41d;
-__crc_inet_peer_xrlim_allow = 0x21e13cb3;
-__crc_inetpeer_invalidate_tree = 0x1cb11044;

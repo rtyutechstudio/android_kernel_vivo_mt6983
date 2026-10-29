@@ -1,9 +1,0 @@
-__crc_usb_phy_roothub_alloc = 0xdbe470be;
-__crc_usb_phy_roothub_init = 0xc93ee1e7;
-__crc_usb_phy_roothub_exit = 0xe39d0794;
-__crc_usb_phy_roothub_set_mode = 0x5bdae35b;
-__crc_usb_phy_roothub_calibrate = 0x851e6003;
-__crc_usb_phy_roothub_power_on = 0x9c803020;
-__crc_usb_phy_roothub_power_off = 0x8c89e3b8;
-__crc_usb_phy_roothub_suspend = 0x7f81db17;
-__crc_usb_phy_roothub_resume = 0x10db9c7d;

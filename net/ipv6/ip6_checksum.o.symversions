@@ -1,2 +1,0 @@
-__crc_udp6_csum_init = 0xd1bbcdce;
-__crc_udp6_set_csum = 0x82591d99;

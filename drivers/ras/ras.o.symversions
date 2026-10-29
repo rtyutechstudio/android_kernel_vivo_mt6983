@@ -1,9 +1,0 @@
-__crc___tracepoint_mc_event = 0x89c429e4;
-__crc___traceiter_mc_event = 0xb9852d11;
-__crc___SCK__tp_func_mc_event = 0x5c3bbd06;
-__crc___tracepoint_non_standard_event = 0x0a7ceb30;
-__crc___traceiter_non_standard_event = 0x59c43dc9;
-__crc___SCK__tp_func_non_standard_event = 0x71a20f4a;
-__crc___tracepoint_arm_event = 0x9e9b913d;
-__crc___traceiter_arm_event = 0x430d88ec;
-__crc___SCK__tp_func_arm_event = 0xd04aedfd;

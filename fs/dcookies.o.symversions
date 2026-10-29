@@ -1,3 +1,0 @@
-__crc_dcookie_register = 0x2f4113a2;
-__crc_dcookie_unregister = 0xd20bf6ba;
-__crc_get_dcookie = 0xadd1b583;

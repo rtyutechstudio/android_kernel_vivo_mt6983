@@ -1,4 +1,0 @@
-__crc_skb_udp_tunnel_segment = 0x3576131d;
-__crc___udp_gso_segment = 0xf1ac9a83;
-__crc_udp_gro_receive = 0x39d22c5d;
-__crc_udp_gro_complete = 0x5203cf6b;

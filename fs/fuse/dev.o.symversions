@@ -1,9 +1,0 @@
-__crc_fuse_len_args = 0xdd626ee3;
-__crc_fuse_get_unique = 0xa00e8743;
-__crc_fuse_dev_fiq_ops = 0x8464bd12;
-__crc_fuse_request_end = 0x3fa8e96d;
-__crc_fuse_simple_background = 0x50f0878b;
-__crc_fuse_dequeue_forget = 0x68c69001;
-__crc_fuse_abort_conn = 0x8951bdf9;
-__crc_fuse_dev_release = 0x53772ad4;
-__crc_fuse_dev_operations = 0xa7a59165;

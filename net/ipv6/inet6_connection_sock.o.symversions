@@ -1,4 +1,0 @@
-__crc_inet6_csk_route_req = 0xe853b32c;
-__crc_inet6_csk_addr2sockaddr = 0x11d516b6;
-__crc_inet6_csk_xmit = 0x0031ad70;
-__crc_inet6_csk_update_pmtu = 0x06dbd35f;

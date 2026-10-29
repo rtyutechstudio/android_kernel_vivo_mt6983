@@ -1,5 +1,0 @@
-__crc_generic_remap_file_range_prep = 0x0e1cdbc4;
-__crc_do_clone_file_range = 0xdd12eb97;
-__crc_vfs_clone_file_range = 0xcd0e65b8;
-__crc_vfs_dedupe_file_range_one = 0x032b7ddc;
-__crc_vfs_dedupe_file_range = 0x80bc88ae;

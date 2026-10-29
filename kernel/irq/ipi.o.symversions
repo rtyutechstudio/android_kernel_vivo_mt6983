@@ -1,3 +1,0 @@
-__crc_ipi_get_hwirq = 0xc05cee80;
-__crc_ipi_send_single = 0x313ea5fd;
-__crc_ipi_send_mask = 0xc95784eb;

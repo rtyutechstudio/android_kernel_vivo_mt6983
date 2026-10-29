@@ -1,7 +1,0 @@
-__crc_ip6_datagram_release_cb = 0xbd599faf;
-__crc___ip6_datagram_connect = 0xe53ae75c;
-__crc_ip6_datagram_connect = 0x25dd1d5f;
-__crc_ip6_datagram_connect_v6_only = 0x83f53f33;
-__crc_ipv6_recv_error = 0xb011aed9;
-__crc_ip6_datagram_recv_ctl = 0xc96e7691;
-__crc_ip6_datagram_send_ctl = 0xd3f27ce5;

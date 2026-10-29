@@ -1,9 +1,0 @@
-__crc_inet_diag_msg_common_fill = 0x7b68ccb2;
-__crc_inet_diag_msg_attrs_fill = 0x7d9442fe;
-__crc_inet_sk_diag_fill = 0x993ac2af;
-__crc_inet_diag_find_one_icsk = 0x51b5dea8;
-__crc_inet_diag_dump_one_icsk = 0x9cb1bb89;
-__crc_inet_diag_bc_sk = 0x776b8d1d;
-__crc_inet_diag_dump_icsk = 0x7b383911;
-__crc_inet_diag_register = 0xb61f669c;
-__crc_inet_diag_unregister = 0xde0142f3;

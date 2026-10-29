@@ -1,6 +1,0 @@
-__crc_inet6_protos = 0x0d84be8f;
-__crc_inet6_add_protocol = 0x23a4bf95;
-__crc_inet6_del_protocol = 0xbc26219e;
-__crc_inet6_offloads = 0xeba504a6;
-__crc_inet6_add_offload = 0x92ab5c76;
-__crc_inet6_del_offload = 0xc2b70b19;

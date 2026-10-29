@@ -1,3 +1,0 @@
-__crc_aead_geniv_alloc = 0x29a8b9e9;
-__crc_aead_init_geniv = 0xa124adb6;
-__crc_aead_exit_geniv = 0x6ddb7c01;

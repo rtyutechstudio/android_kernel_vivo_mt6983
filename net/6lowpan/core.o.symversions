@@ -1,4 +1,0 @@
-__crc_lowpan_register_netdevice = 0x1f0dc8f4;
-__crc_lowpan_register_netdev = 0xbf24d7f2;
-__crc_lowpan_unregister_netdevice = 0x5756557d;
-__crc_lowpan_unregister_netdev = 0xcc908b74;
