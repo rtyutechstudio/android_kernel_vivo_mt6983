@@ -7,6 +7,7 @@
  * conservative: disable the optional paths and let the callers use their
  * normal fallback implementations.
  */
+#include <linux/atomic.h>
 #include <linux/export.h>
 #include <linux/gfp.h>
 #include <linux/mm_types.h>
@@ -55,5 +56,6 @@ EXPORT_SYMBOL(rsc_qos_enable);
 int sysctl_allow_alloc_from_thppool;
 EXPORT_SYMBOL(sysctl_allow_alloc_from_thppool);
 
-int nr_dmapages_in_thppool;
+/* Incremented with a 32-bit atomic (LDADDL in vendor system_heap.ko). */
+atomic_t nr_dmapages_in_thppool = ATOMIC_INIT(0);
 EXPORT_SYMBOL(nr_dmapages_in_thppool);
