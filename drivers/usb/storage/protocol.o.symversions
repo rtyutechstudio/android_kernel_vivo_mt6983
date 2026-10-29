@@ -1,0 +1,3 @@
+__crc_usb_stor_transparent_scsi_command = 0xc6a77f0f;
+__crc_usb_stor_access_xfer_buf = 0x232b6422;
+__crc_usb_stor_set_xfer_buf = 0x40720a78;

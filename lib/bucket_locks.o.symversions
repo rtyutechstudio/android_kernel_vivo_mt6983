@@ -1,0 +1,2 @@
+__crc___alloc_bucket_spinlocks = 0xe8fbf4fa;
+__crc_free_bucket_spinlocks = 0x08162c74;

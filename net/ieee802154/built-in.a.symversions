@@ -1,0 +1,11 @@
+__crc_wpan_phy_find = 0x87f4b77d;
+__crc_wpan_phy_for_each = 0xbac52da8;
+__crc_wpan_phy_new = 0x4dfe2ff5;
+__crc_wpan_phy_register = 0x29d12df1;
+__crc_wpan_phy_unregister = 0x1c8fb0f1;
+__crc_wpan_phy_free = 0x0a32ebd8;
+__crc_ieee802154_hdr_push = 0xaa081a1f;
+__crc_ieee802154_hdr_pull = 0xce293e97;
+__crc_ieee802154_hdr_peek_addrs = 0xbd721fbc;
+__crc_ieee802154_hdr_peek = 0xf9bd80ae;
+__crc_ieee802154_max_payload = 0x87e2553b;

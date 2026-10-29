@@ -1,0 +1,4 @@
+__crc_irq_bypass_register_producer = 0x418873cc;
+__crc_irq_bypass_unregister_producer = 0xf6e772c3;
+__crc_irq_bypass_register_consumer = 0x888c5be5;
+__crc_irq_bypass_unregister_consumer = 0x3fe35aea;

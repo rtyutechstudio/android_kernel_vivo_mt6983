@@ -1,0 +1,2 @@
+__crc_arm64_mm_context_get = 0xe8244485;
+__crc_arm64_mm_context_put = 0x785ceb71;

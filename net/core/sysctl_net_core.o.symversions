@@ -1,0 +1,2 @@
+__crc_sysctl_fb_tunnels_only_for_init_net = 0x9cdfb3f7;
+__crc_sysctl_devconf_inherit_init_net = 0xd04c1a64;

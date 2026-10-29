@@ -1,0 +1,2 @@
+__crc_tcp_syn_ack_timeout = 0xef648c80;
+__crc_tcp_set_keepalive = 0x4c8e3353;

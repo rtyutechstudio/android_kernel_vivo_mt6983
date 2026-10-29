@@ -1,0 +1,5 @@
+__crc_secure_tcpv6_ts_off = 0xa7463456;
+__crc_secure_tcpv6_seq = 0x0c25ec48;
+__crc_secure_ipv6_port_ephemeral = 0xe1a4f16a;
+__crc_secure_tcp_seq = 0xb2405efc;
+__crc_secure_ipv4_port_ephemeral = 0x57f70547;

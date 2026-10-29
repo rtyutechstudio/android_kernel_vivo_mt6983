@@ -1,0 +1,7 @@
+__crc_nexthop_free_rcu = 0xe05e2f85;
+__crc_nexthop_find_by_id = 0x96c61287;
+__crc_nexthop_select_path = 0x9a5f520d;
+__crc_nexthop_for_each_fib6_nh = 0x78265fcf;
+__crc_fib6_check_nexthop = 0xa4377e59;
+__crc_register_nexthop_notifier = 0x88b9b8c3;
+__crc_unregister_nexthop_notifier = 0xa95c0a79;

@@ -1,0 +1,2 @@
+__crc_jbd2_submit_inode_data = 0x32babffd;
+__crc_jbd2_wait_inode_data = 0x9463c05a;

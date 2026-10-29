@@ -1,0 +1,7 @@
+__crc___fscrypt_inode_uses_inline_crypto = 0x774b0d4f;
+__crc_fscrypt_set_bio_crypt_ctx = 0x68b6d80e;
+__crc_fscrypt_set_bio_crypt_ctx_bh = 0x2aa4aef4;
+__crc_fscrypt_mergeable_bio = 0xdded86a4;
+__crc_fscrypt_mergeable_bio_bh = 0xa40ff93b;
+__crc_fscrypt_dio_supported = 0xf7248b5d;
+__crc_fscrypt_limit_io_blocks = 0xa0902af1;

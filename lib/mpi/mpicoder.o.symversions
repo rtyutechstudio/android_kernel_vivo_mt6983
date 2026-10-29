@@ -1,0 +1,9 @@
+__crc_mpi_read_raw_data = 0xceb1f126;
+__crc_mpi_read_from_buffer = 0x3e7080cb;
+__crc_mpi_fromstr = 0x69cf0632;
+__crc_mpi_scanval = 0x91b774a1;
+__crc_mpi_read_buffer = 0x3bf17755;
+__crc_mpi_get_buffer = 0x04c4f603;
+__crc_mpi_write_to_sgl = 0xd774957d;
+__crc_mpi_read_raw_from_sgl = 0x3224b2a9;
+__crc_mpi_print = 0x6c205008;

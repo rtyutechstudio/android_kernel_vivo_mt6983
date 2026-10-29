@@ -1,0 +1,3 @@
+__crc_snd_soc_link_compr_startup = 0xb1828a03;
+__crc_snd_soc_link_compr_shutdown = 0xab82e55a;
+__crc_snd_soc_link_compr_set_params = 0xa57b43e4;

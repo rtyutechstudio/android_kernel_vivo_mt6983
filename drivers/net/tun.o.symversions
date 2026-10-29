@@ -1,0 +1,3 @@
+__crc_tun_ptr_free = 0x4099f919;
+__crc_tun_get_socket = 0xfe9a2b70;
+__crc_tun_get_tx_ring = 0xc2dd8223;

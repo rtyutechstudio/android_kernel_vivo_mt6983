@@ -1,0 +1,3 @@
+__crc_poly1305_init_generic = 0x8c874435;
+__crc_poly1305_update_generic = 0x39e8fa4b;
+__crc_poly1305_final_generic = 0x4a833012;

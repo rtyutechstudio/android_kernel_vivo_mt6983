@@ -1,0 +1,6 @@
+__crc_alloc_cpu_rmap = 0xe273d75d;
+__crc_cpu_rmap_put = 0x631d06aa;
+__crc_cpu_rmap_add = 0xc66a8304;
+__crc_cpu_rmap_update = 0x61c20fd8;
+__crc_free_irq_cpu_rmap = 0x7732159c;
+__crc_irq_cpu_rmap_add = 0x44a6e90a;

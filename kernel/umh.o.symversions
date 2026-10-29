@@ -1,0 +1,6 @@
+__crc_usermodehelper_read_trylock = 0xdb8a1b3f;
+__crc_usermodehelper_read_lock_wait = 0x2d1b02d2;
+__crc_usermodehelper_read_unlock = 0xae69b1c1;
+__crc_call_usermodehelper_setup = 0xcdb4409b;
+__crc_call_usermodehelper_exec = 0xad898cc3;
+__crc_call_usermodehelper = 0xa7eedcc4;

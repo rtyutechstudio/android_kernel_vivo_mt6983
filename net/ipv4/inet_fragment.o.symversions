@@ -1,0 +1,13 @@
+__crc_ip_frag_ecn_table = 0xa8f6c843;
+__crc_inet_frags_init = 0xda8dfd3c;
+__crc_inet_frags_fini = 0xf93ea1f9;
+__crc_fqdir_init = 0x94dc4fbd;
+__crc_fqdir_exit = 0x1cf0ec30;
+__crc_inet_frag_kill = 0xd622b633;
+__crc_inet_frag_rbtree_purge = 0x134cdd34;
+__crc_inet_frag_destroy = 0x6dffda9b;
+__crc_inet_frag_find = 0xbc1503b8;
+__crc_inet_frag_queue_insert = 0x6a6771cb;
+__crc_inet_frag_reasm_prepare = 0x2b9b3ab5;
+__crc_inet_frag_reasm_finish = 0x86786b5f;
+__crc_inet_frag_pull_head = 0x424a2556;

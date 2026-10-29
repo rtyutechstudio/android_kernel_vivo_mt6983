@@ -1,0 +1,6 @@
+__crc_nf_xfrm_me_harder = 0x43b5575b;
+__crc_nf_ct_nat_ext_add = 0xb1cebfd0;
+__crc_nf_nat_setup_info = 0x4f506822;
+__crc_nf_nat_alloc_null_binding = 0x74b63d72;
+__crc_nf_nat_packet = 0xb80f65d0;
+__crc_nf_nat_inet_fn = 0x96e96b72;

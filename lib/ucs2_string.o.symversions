@@ -1,0 +1,6 @@
+__crc_ucs2_strnlen = 0x06bd88b5;
+__crc_ucs2_strlen = 0x702946da;
+__crc_ucs2_strsize = 0xd1363cc1;
+__crc_ucs2_strncmp = 0x9d61e994;
+__crc_ucs2_utf8size = 0x465e24ff;
+__crc_ucs2_as_utf8 = 0x4336fcca;

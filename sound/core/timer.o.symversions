@@ -1,0 +1,15 @@
+__crc_snd_timer_instance_new = 0x2dde085f;
+__crc_snd_timer_instance_free = 0x59dc5cfc;
+__crc_snd_timer_open = 0xf13b6abb;
+__crc_snd_timer_close = 0xb4b1918b;
+__crc_snd_timer_resolution = 0x5d4a3bb6;
+__crc_snd_timer_start = 0x5fe6125d;
+__crc_snd_timer_stop = 0xdd6dd4fd;
+__crc_snd_timer_continue = 0xcd127020;
+__crc_snd_timer_pause = 0xe5ac816b;
+__crc_snd_timer_interrupt = 0x864ecaff;
+__crc_snd_timer_new = 0xe328cde9;
+__crc_snd_timer_notify = 0xcfe9ea03;
+__crc_snd_timer_global_new = 0x894fe0f7;
+__crc_snd_timer_global_free = 0x21a1eddb;
+__crc_snd_timer_global_register = 0xbdabed2d;

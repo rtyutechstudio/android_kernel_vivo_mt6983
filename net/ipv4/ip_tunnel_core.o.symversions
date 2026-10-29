@@ -1,0 +1,13 @@
+__crc_iptun_encaps = 0x061136bd;
+__crc_ip6tun_encaps = 0x0dab1cdc;
+__crc_iptunnel_xmit = 0xb74e5260;
+__crc___iptunnel_pull_header = 0x33f44573;
+__crc_iptunnel_metadata_reply = 0x52ec7ed9;
+__crc_iptunnel_handle_offloads = 0x9fd65208;
+__crc_skb_tunnel_check_pmtu = 0x116c01c1;
+__crc_ip_tunnel_get_stats64 = 0x708abe41;
+__crc_ip_tunnel_metadata_cnt = 0x66628bf3;
+__crc_ip_tunnel_need_metadata = 0x7f7cbc64;
+__crc_ip_tunnel_unneed_metadata = 0xc0f0458a;
+__crc_ip_tunnel_parse_protocol = 0x8e01b4cd;
+__crc_ip_tunnel_header_ops = 0x23262945;

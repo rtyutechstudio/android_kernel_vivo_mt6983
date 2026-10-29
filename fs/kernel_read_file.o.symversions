@@ -1,0 +1,4 @@
+__crc_kernel_read_file = 0x4e4c84dc;
+__crc_kernel_read_file_from_path = 0x615d3447;
+__crc_kernel_read_file_from_path_initns = 0xba057786;
+__crc_kernel_read_file_from_fd = 0xeed0cea4;

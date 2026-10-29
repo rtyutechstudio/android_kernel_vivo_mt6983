@@ -1,0 +1,2 @@
+__crc_tcp_register_ulp = 0xf9ef9569;
+__crc_tcp_unregister_ulp = 0x62799cbb;

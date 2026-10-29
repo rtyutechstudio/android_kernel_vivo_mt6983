@@ -1,0 +1,4 @@
+__crc_xz_dec_init = 0x52d717da;
+__crc_xz_dec_reset = 0x81db6ebb;
+__crc_xz_dec_run = 0x6e5b8651;
+__crc_xz_dec_end = 0x65dccf13;

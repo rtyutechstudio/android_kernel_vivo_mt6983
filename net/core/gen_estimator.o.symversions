@@ -1,0 +1,5 @@
+__crc_gen_new_estimator = 0xeb2391c9;
+__crc_gen_kill_estimator = 0xded39a6b;
+__crc_gen_replace_estimator = 0xa13e780a;
+__crc_gen_estimator_active = 0xa28cfcc0;
+__crc_gen_estimator_read = 0x4df2ea84;

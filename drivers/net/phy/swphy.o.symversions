@@ -1,0 +1,2 @@
+__crc_swphy_validate_state = 0xe4e48b12;
+__crc_swphy_read_reg = 0x18e4f8aa;

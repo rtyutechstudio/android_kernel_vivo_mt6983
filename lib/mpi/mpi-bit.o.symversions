@@ -1,0 +1,5 @@
+__crc_mpi_normalize = 0x4efcf021;
+__crc_mpi_get_nbits = 0xdbf7cb70;
+__crc_mpi_test_bit = 0xea018bbb;
+__crc_mpi_set_highbit = 0x1f38a4f6;
+__crc_mpi_clear_bit = 0x436d817f;

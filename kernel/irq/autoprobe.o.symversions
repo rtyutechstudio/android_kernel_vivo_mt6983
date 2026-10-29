@@ -1,0 +1,3 @@
+__crc_probe_irq_on = 0xb121390a;
+__crc_probe_irq_mask = 0x360b1afe;
+__crc_probe_irq_off = 0xab600421;

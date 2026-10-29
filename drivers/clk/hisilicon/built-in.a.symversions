@@ -1,0 +1,12 @@
+__crc_hisi_clk_alloc = 0xb9d5ac41;
+__crc_hisi_clk_init = 0x6500347d;
+__crc_hisi_clk_register_fixed_rate = 0x295b982a;
+__crc_hisi_clk_register_fixed_factor = 0x0bb028d4;
+__crc_hisi_clk_register_mux = 0xd8d24416;
+__crc_hisi_clk_register_phase = 0x59035706;
+__crc_hisi_clk_register_divider = 0xe5cb1943;
+__crc_hisi_clk_register_gate = 0x3fea029c;
+__crc_hisi_clk_register_gate_sep = 0x8e4b63a6;
+__crc_clk_register_hisi_phase = 0xb34ce8af;
+__crc_hisi_reset_init = 0x0f388f08;
+__crc_hisi_reset_exit = 0x272e9d77;

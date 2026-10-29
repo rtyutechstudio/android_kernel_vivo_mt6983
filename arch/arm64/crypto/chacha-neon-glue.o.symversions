@@ -1,0 +1,3 @@
+__crc_hchacha_block_arch = 0xdd8ec6bd;
+__crc_chacha_init_arch = 0xdc94f829;
+__crc_chacha_crypt_arch = 0x220b49ab;

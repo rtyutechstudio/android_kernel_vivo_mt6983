@@ -1,0 +1,5 @@
+__crc_fuse_do_open = 0x7eddcb4f;
+__crc_fuse_sync_release = 0x543057dd;
+__crc_fuse_direct_io = 0xf24a977d;
+__crc_fuse_do_ioctl = 0xb8056de6;
+__crc_fuse_file_poll = 0x724300af;

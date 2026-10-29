@@ -1,0 +1,7 @@
+__crc_dpm_resume_start = 0xb1bed25d;
+__crc_dpm_resume_end = 0x3d388324;
+__crc_dpm_suspend_end = 0xa6b21ef2;
+__crc_dpm_suspend_start = 0xe862c4b7;
+__crc___suspend_report_result = 0x2a678a13;
+__crc_device_pm_wait_for_dev = 0x980dabc1;
+__crc_dpm_for_each_dev = 0xfb1061da;

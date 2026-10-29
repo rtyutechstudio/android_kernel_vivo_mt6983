@@ -1,0 +1,7 @@
+__crc_dst_cache_get = 0x626beb71;
+__crc_dst_cache_get_ip4 = 0x70d8f6ff;
+__crc_dst_cache_set_ip4 = 0x1572a13a;
+__crc_dst_cache_set_ip6 = 0xf29886f0;
+__crc_dst_cache_get_ip6 = 0x9bc8cd5b;
+__crc_dst_cache_init = 0xae39f80e;
+__crc_dst_cache_destroy = 0xada38766;

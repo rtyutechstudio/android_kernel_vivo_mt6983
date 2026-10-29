@@ -1,0 +1,2 @@
+__crc_nvdimm_namespace_attach_btt = 0x8864b095;
+__crc_nvdimm_namespace_detach_btt = 0x5cbbb7e5;

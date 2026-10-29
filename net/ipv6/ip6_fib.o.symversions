@@ -1,0 +1,3 @@
+__crc_fib6_info_destroy_rcu = 0xa709c835;
+__crc_fib6_new_table = 0x59f46b55;
+__crc_fib6_get_table = 0x10cb430c;

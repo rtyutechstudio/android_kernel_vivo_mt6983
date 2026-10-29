@@ -1,0 +1,4 @@
+__crc_hci_get_route = 0x265b05b4;
+__crc_hci_conn_security = 0x804589d7;
+__crc_hci_conn_check_secure = 0x8cfd48c4;
+__crc_hci_conn_switch_role = 0xee4be930;

@@ -1,0 +1,6 @@
+__crc_mpi_const = 0x2421097b;
+__crc_mpi_alloc = 0x98503a63;
+__crc_mpi_clear = 0xd1481de7;
+__crc_mpi_free = 0x80d5e57a;
+__crc_mpi_set = 0x38e1fde7;
+__crc_mpi_set_ui = 0x3450ad94;

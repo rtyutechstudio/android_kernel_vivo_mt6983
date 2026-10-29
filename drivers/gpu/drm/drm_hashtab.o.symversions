@@ -1,0 +1,6 @@
+__crc_drm_ht_create = 0x95dbc76d;
+__crc_drm_ht_insert_item = 0x3ba17eab;
+__crc_drm_ht_just_insert_please = 0x9b8a53f5;
+__crc_drm_ht_find_item = 0xa0713087;
+__crc_drm_ht_remove_item = 0x070b28aa;
+__crc_drm_ht_remove = 0x8563a554;

@@ -1,0 +1,2 @@
+__crc_suspend_device_irqs = 0xb18429eb;
+__crc_resume_device_irqs = 0x1268f357;

@@ -1,0 +1,3 @@
+__crc_hidraw_report_event = 0xedc56a36;
+__crc_hidraw_connect = 0x5d6fc4f0;
+__crc_hidraw_disconnect = 0xf64ca28c;

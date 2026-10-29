@@ -1,0 +1,6 @@
+__crc___ip_mc_inc_group = 0x7c40b919;
+__crc_ip_mc_inc_group = 0x4ee00404;
+__crc_ip_mc_check_igmp = 0x15439661;
+__crc___ip_mc_dec_group = 0x15e15479;
+__crc_ip_mc_join_group = 0xd3d4f80c;
+__crc_ip_mc_leave_group = 0xa246ca84;

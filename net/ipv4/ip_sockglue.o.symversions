@@ -1,0 +1,8 @@
+__crc_ip_cmsg_recv_offset = 0x33eef5f2;
+__crc_ip_sock_set_tos = 0x4445765b;
+__crc_ip_sock_set_freebind = 0x086bf5b5;
+__crc_ip_sock_set_recverr = 0x525fef16;
+__crc_ip_sock_set_mtu_discover = 0x44c61b51;
+__crc_ip_sock_set_pktinfo = 0xb6d41179;
+__crc_ip_setsockopt = 0x6509bc0f;
+__crc_ip_getsockopt = 0xfb914044;

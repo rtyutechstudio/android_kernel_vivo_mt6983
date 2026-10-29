@@ -1,0 +1,4 @@
+__crc_register_user_break_hook = 0x5dd9774d;
+__crc_unregister_user_break_hook = 0x4d86c455;
+__crc_register_kernel_break_hook = 0xf42b9584;
+__crc_unregister_kernel_break_hook = 0x2458ffb4;

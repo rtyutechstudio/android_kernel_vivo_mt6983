@@ -1,0 +1,8 @@
+__crc_vhost_iotlb_map_free = 0xad111707;
+__crc_vhost_iotlb_add_range = 0x38ff875f;
+__crc_vhost_iotlb_del_range = 0x6bec0e66;
+__crc_vhost_iotlb_alloc = 0xc577832d;
+__crc_vhost_iotlb_reset = 0x5f4e5249;
+__crc_vhost_iotlb_free = 0xa24517eb;
+__crc_vhost_iotlb_itree_first = 0x514d0e6a;
+__crc_vhost_iotlb_itree_next = 0x7579334f;

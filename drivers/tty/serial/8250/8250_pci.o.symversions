@@ -1,0 +1,4 @@
+__crc_pciserial_init_ports = 0x63da1106;
+__crc_pciserial_remove_ports = 0xe84f6e5c;
+__crc_pciserial_suspend_ports = 0x31c7970f;
+__crc_pciserial_resume_ports = 0xbfbc5434;

@@ -1,0 +1,2 @@
+__crc_kasan_save_enable_multi_shot = 0x97645739;
+__crc_kasan_restore_multi_shot = 0x47f78877;

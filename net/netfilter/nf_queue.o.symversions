@@ -1,0 +1,7 @@
+__crc_nf_register_queue_handler = 0xaae7001d;
+__crc_nf_unregister_queue_handler = 0xb08fe1fe;
+__crc_nf_queue_entry_free = 0x99d84567;
+__crc_nf_queue_entry_get_refs = 0xbfd198ff;
+__crc_nf_queue_nf_hook_drop = 0xeb151a2e;
+__crc_nf_queue = 0xf6cb08eb;
+__crc_nf_reinject = 0x93c1e0b6;

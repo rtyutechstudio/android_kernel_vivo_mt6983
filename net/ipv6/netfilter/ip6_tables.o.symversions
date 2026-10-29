@@ -1,0 +1,6 @@
+__crc_ip6t_alloc_initial_table = 0x2f5c80be;
+__crc_ip6t_register_table = 0x54787e51;
+__crc_ip6t_unregister_table = 0x031c9fcf;
+__crc_ip6t_unregister_table_pre_exit = 0xa2905e0d;
+__crc_ip6t_unregister_table_exit = 0xf9c387a4;
+__crc_ip6t_do_table = 0x36acff8d;

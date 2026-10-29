@@ -1,0 +1,5 @@
+__crc_textsearch_register = 0xe2bbee0a;
+__crc_textsearch_unregister = 0x65808715;
+__crc_textsearch_find_continuous = 0xcb970fe7;
+__crc_textsearch_prepare = 0x3451ce7a;
+__crc_textsearch_destroy = 0x687fecd9;

@@ -1,0 +1,3 @@
+__crc_scsi_bios_ptable = 0xbcf01128;
+__crc_scsi_partsize = 0x3e9566a3;
+__crc_scsicam_bios_param = 0x1d81a031;

@@ -1,0 +1,10 @@
+__crc_can_rx_offload_irq_offload_timestamp = 0x1f1d4e28;
+__crc_can_rx_offload_irq_offload_fifo = 0x7ce07ca2;
+__crc_can_rx_offload_queue_sorted = 0x4b58bfd7;
+__crc_can_rx_offload_get_echo_skb = 0x087ec51e;
+__crc_can_rx_offload_queue_tail = 0xdc3fda4e;
+__crc_can_rx_offload_add_timestamp = 0x53050965;
+__crc_can_rx_offload_add_fifo = 0xb1f4d8f4;
+__crc_can_rx_offload_add_manual = 0x7efd24de;
+__crc_can_rx_offload_enable = 0x534d5363;
+__crc_can_rx_offload_del = 0x86df4540;

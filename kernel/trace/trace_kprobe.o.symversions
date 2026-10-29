@@ -1,0 +1,4 @@
+__crc_kprobe_event_cmd_init = 0x532b90b5;
+__crc___kprobe_event_gen_cmd_start = 0x890f4f97;
+__crc___kprobe_event_add_fields = 0x7afcb7db;
+__crc_kprobe_event_delete = 0xe3b09712;

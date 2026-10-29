@@ -1,0 +1,9 @@
+__crc_xsk_set_rx_need_wakeup = 0x901d3b18;
+__crc_xsk_set_tx_need_wakeup = 0xce4a9ce7;
+__crc_xsk_clear_rx_need_wakeup = 0x5300eed0;
+__crc_xsk_clear_tx_need_wakeup = 0x0d57492f;
+__crc_xsk_uses_need_wakeup = 0x09e86e4a;
+__crc_xsk_get_pool_from_qid = 0x54e4eba2;
+__crc_xsk_tx_completed = 0x0ad16c8a;
+__crc_xsk_tx_release = 0xeeecf2b4;
+__crc_xsk_tx_peek_desc = 0x3479ec80;

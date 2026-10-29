@@ -1,0 +1,2 @@
+__crc_queued_read_lock_slowpath = 0x617c452b;
+__crc_queued_write_lock_slowpath = 0xc528a49a;

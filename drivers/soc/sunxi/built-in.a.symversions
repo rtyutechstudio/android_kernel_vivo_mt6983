@@ -1,0 +1,2 @@
+__crc_sunxi_sram_claim = 0x9982a380;
+__crc_sunxi_sram_release = 0x0b55ebb8;

@@ -1,0 +1,3 @@
+__crc_drm_clflush_pages = 0xf39c23cb;
+__crc_drm_clflush_sg = 0xb0b05ff5;
+__crc_drm_clflush_virt_range = 0x0a72f765;

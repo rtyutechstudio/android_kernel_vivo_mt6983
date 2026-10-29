@@ -1,0 +1,5 @@
+__crc_sk_stream_wait_connect = 0x5d83571a;
+__crc_sk_stream_wait_close = 0x4144e0a6;
+__crc_sk_stream_wait_memory = 0xa1fe2b06;
+__crc_sk_stream_error = 0xc2dd8681;
+__crc_sk_stream_kill_queues = 0x42a5955c;

@@ -1,0 +1,12 @@
+__crc_ip6_xmit = 0x7c100cfa;
+__crc_ip6_fraglist_init = 0xd6f758a1;
+__crc_ip6_fraglist_prepare = 0xc648e28b;
+__crc_ip6_frag_init = 0xd6fdd4e2;
+__crc_ip6_frag_next = 0xb6268bd1;
+__crc_ip6_dst_lookup = 0x25c38003;
+__crc_ip6_dst_lookup_flow = 0x933b80f6;
+__crc_ip6_sk_dst_lookup_flow = 0x18d7998d;
+__crc_ip6_dst_lookup_tunnel = 0xb63e296f;
+__crc_ip6_append_data = 0x5e3ceaec;
+__crc_ip6_push_pending_frames = 0x54c73ea8;
+__crc_ip6_flush_pending_frames = 0x6d32498d;

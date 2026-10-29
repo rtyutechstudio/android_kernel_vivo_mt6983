@@ -1,0 +1,10 @@
+__crc_mpi_point_new = 0x9eebdde7;
+__crc_mpi_point_release = 0xfe1a7a7b;
+__crc_mpi_point_init = 0x6bcdedc0;
+__crc_mpi_point_free_parts = 0x8a83fb45;
+__crc_mpi_ec_init = 0x95843030;
+__crc_mpi_ec_deinit = 0xf3797506;
+__crc_mpi_ec_get_affine = 0x291876f3;
+__crc_mpi_ec_add_points = 0x8ff60436;
+__crc_mpi_ec_mul_point = 0x5fa625ed;
+__crc_mpi_ec_curve_point = 0x57f576b9;

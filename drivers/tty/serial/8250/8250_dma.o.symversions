@@ -1,0 +1,3 @@
+__crc_serial8250_rx_dma_flush = 0x313e5489;
+__crc_serial8250_request_dma = 0x8af68b90;
+__crc_serial8250_release_dma = 0xcff5747b;

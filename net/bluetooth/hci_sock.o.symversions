@@ -1,0 +1,2 @@
+__crc_hci_mgmt_chan_register = 0xf16dd0ad;
+__crc_hci_mgmt_chan_unregister = 0x91fb4b1d;

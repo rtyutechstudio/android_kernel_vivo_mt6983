@@ -1,0 +1,3 @@
+__crc_poly1305_core_setkey = 0xd45b9cf4;
+__crc_poly1305_core_blocks = 0x021f3700;
+__crc_poly1305_core_emit = 0xbcb90cb3;

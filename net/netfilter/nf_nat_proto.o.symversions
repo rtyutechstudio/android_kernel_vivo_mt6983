@@ -1,0 +1,6 @@
+__crc_nf_nat_icmp_reply_translation = 0x26ad5368;
+__crc_nf_nat_ipv4_register_fn = 0xb58e7cdf;
+__crc_nf_nat_ipv4_unregister_fn = 0xc97127a9;
+__crc_nf_nat_icmpv6_reply_translation = 0x1c05ae51;
+__crc_nf_nat_ipv6_register_fn = 0xaf0a11e2;
+__crc_nf_nat_ipv6_unregister_fn = 0x909a6876;

@@ -1,0 +1,12 @@
+__crc_to_nvdimm = 0xa5e8886f;
+__crc_nd_blk_region_to_dimm = 0x55c4baa7;
+__crc_nd_blk_memremap_flags = 0xdd899d3f;
+__crc_to_ndd = 0xb937a772;
+__crc_nvdimm_name = 0x7bd4d3d6;
+__crc_nvdimm_kobj = 0x1be5d477;
+__crc_nvdimm_cmd_mask = 0x2544791b;
+__crc_nvdimm_provider_data = 0xe7a56555;
+__crc___nvdimm_create = 0xe01e3fa2;
+__crc_nvdimm_security_setup_events = 0x22d687f6;
+__crc_nvdimm_in_overwrite = 0x25220766;
+__crc_nvdimm_bus_check_dimm_count = 0xed56045e;

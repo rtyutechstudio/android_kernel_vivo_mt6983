@@ -1,0 +1,5 @@
+__crc_icmp_err_convert = 0x49045426;
+__crc_icmp_global_allow = 0x39991865;
+__crc___icmp_send = 0x20cf33e8;
+__crc_icmp_ndo_send = 0xea3ac6a5;
+__crc_ip_icmp_error_rfc4884 = 0xa1f8d537;

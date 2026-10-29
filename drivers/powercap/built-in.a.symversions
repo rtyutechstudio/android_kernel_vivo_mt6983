@@ -1,0 +1,4 @@
+__crc_powercap_register_zone = 0x259f99eb;
+__crc_powercap_unregister_zone = 0xedbf4aa7;
+__crc_powercap_register_control_type = 0x0c8ad7d7;
+__crc_powercap_unregister_control_type = 0x6a5786f4;

@@ -1,0 +1,6 @@
+__crc_fat_attach = 0x84114ba5;
+__crc_fat_detach = 0x7aa24e9e;
+__crc_fat_build_inode = 0xd2f80738;
+__crc_fat_sync_inode = 0x56b10a10;
+__crc_fat_fill_super = 0xe56852f0;
+__crc_fat_flush_inodes = 0xe7367d3d;

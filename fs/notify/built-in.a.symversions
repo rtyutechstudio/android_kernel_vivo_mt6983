@@ -1,0 +1,12 @@
+__crc___fsnotify_inode_delete = 0xc460ea72;
+__crc___fsnotify_parent = 0xba1d1d19;
+__crc_fsnotify = 0x51d4b69b;
+__crc_fsnotify_get_cookie = 0x1a6bf28f;
+__crc_fsnotify_put_group = 0x51ac3197;
+__crc_fsnotify_alloc_group = 0xb2c63f33;
+__crc_fsnotify_put_mark = 0x79c04801;
+__crc_fsnotify_destroy_mark = 0x9d4d9593;
+__crc_fsnotify_add_mark = 0x1e8a4072;
+__crc_fsnotify_find_mark = 0xe0de627a;
+__crc_fsnotify_init_mark = 0x99d10e1b;
+__crc_fsnotify_wait_marks_destroyed = 0xbaf6850c;

@@ -1,0 +1,13 @@
+__crc_klist_init = 0xd24e9e8c;
+__crc_klist_add_head = 0xe6f52443;
+__crc_klist_add_tail = 0x611cfa85;
+__crc_klist_add_behind = 0x8339df73;
+__crc_klist_add_before = 0x40f8bd4e;
+__crc_klist_del = 0x153b60a6;
+__crc_klist_remove = 0xc82c721f;
+__crc_klist_node_attached = 0x2864abc9;
+__crc_klist_iter_init_node = 0x977be5c7;
+__crc_klist_iter_init = 0xe3cd5fae;
+__crc_klist_iter_exit = 0x819d72cb;
+__crc_klist_prev = 0x798b7682;
+__crc_klist_next = 0x355bc89a;

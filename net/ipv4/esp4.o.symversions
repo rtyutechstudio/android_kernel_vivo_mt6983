@@ -1,0 +1,3 @@
+__crc_esp_output_head = 0x70b3f38d;
+__crc_esp_output_tail = 0xfaa5f0e5;
+__crc_esp_input_done2 = 0x1a17c6e9;

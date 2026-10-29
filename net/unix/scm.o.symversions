@@ -1,0 +1,7 @@
+__crc_unix_tot_inflight = 0x1526b301;
+__crc_gc_inflight_list = 0x648eb59d;
+__crc_unix_gc_lock = 0x42bed8d4;
+__crc_unix_get_socket = 0x11de5b59;
+__crc_unix_attach_fds = 0xc09102a6;
+__crc_unix_detach_fds = 0x667554e6;
+__crc_unix_destruct_scm = 0x1b19f8fc;

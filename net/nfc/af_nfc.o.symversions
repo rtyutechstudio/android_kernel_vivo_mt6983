@@ -1,0 +1,2 @@
+__crc_nfc_proto_register = 0x268d0e17;
+__crc_nfc_proto_unregister = 0x03cee1cd;

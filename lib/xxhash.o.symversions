@@ -1,0 +1,10 @@
+__crc_xxh32_copy_state = 0xbe5a24e9;
+__crc_xxh64_copy_state = 0xd5b3d0d5;
+__crc_xxh32 = 0x8888f1fe;
+__crc_xxh64 = 0xb2f35c6a;
+__crc_xxh32_reset = 0x6673f96d;
+__crc_xxh64_reset = 0x658ce1a8;
+__crc_xxh32_update = 0x45535485;
+__crc_xxh32_digest = 0x4a96a8eb;
+__crc_xxh64_update = 0x3f0eabd2;
+__crc_xxh64_digest = 0xe32ab4d8;

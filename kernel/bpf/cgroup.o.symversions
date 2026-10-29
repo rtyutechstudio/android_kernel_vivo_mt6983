@@ -1,0 +1,5 @@
+__crc_cgroup_bpf_enabled_key = 0xf4b2b86e;
+__crc___cgroup_bpf_run_filter_skb = 0x4819e6c6;
+__crc___cgroup_bpf_run_filter_sk = 0x55688632;
+__crc___cgroup_bpf_run_filter_sock_addr = 0x3d7ad87a;
+__crc___cgroup_bpf_run_filter_sock_ops = 0x6cb7517f;

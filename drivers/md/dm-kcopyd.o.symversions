@@ -1,0 +1,6 @@
+__crc_dm_kcopyd_copy = 0x03c9065d;
+__crc_dm_kcopyd_zero = 0xa7beb92f;
+__crc_dm_kcopyd_prepare_callback = 0x7880c781;
+__crc_dm_kcopyd_do_callback = 0x4b5fd49e;
+__crc_dm_kcopyd_client_create = 0xd688716b;
+__crc_dm_kcopyd_client_destroy = 0x154c6338;

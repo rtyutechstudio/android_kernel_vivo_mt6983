@@ -1,0 +1,2 @@
+__crc_chacha_block_generic = 0x11e30762;
+__crc_hchacha_block_generic = 0xaaa4b9bc;

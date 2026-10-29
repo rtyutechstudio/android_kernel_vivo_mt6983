@@ -1,0 +1,12 @@
+__crc___siphash_aligned = 0xa97463c9;
+__crc_siphash_1u64 = 0x3126a9e8;
+__crc_siphash_2u64 = 0x12cabc89;
+__crc_siphash_3u64 = 0xa0ae1e73;
+__crc_siphash_4u64 = 0x0e17678a;
+__crc_siphash_1u32 = 0x70002fe8;
+__crc_siphash_3u32 = 0x838d2bc8;
+__crc___hsiphash_aligned = 0xa5056338;
+__crc_hsiphash_1u32 = 0x6481ffe0;
+__crc_hsiphash_2u32 = 0x30acfde9;
+__crc_hsiphash_3u32 = 0x9e0fa5ae;
+__crc_hsiphash_4u32 = 0xf643d104;

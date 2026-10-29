@@ -1,0 +1,6 @@
+__crc_chacha20poly1305_encrypt = 0x147c3f2e;
+__crc_xchacha20poly1305_encrypt = 0xce15a526;
+__crc_chacha20poly1305_decrypt = 0x1c679fe2;
+__crc_xchacha20poly1305_decrypt = 0xbaf4d923;
+__crc_chacha20poly1305_encrypt_sg_inplace = 0x37b34b92;
+__crc_chacha20poly1305_decrypt_sg_inplace = 0x5b19e187;

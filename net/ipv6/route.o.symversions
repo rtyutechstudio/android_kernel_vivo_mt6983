@@ -1,0 +1,14 @@
+__crc___tracepoint_fib6_table_lookup = 0xead035ee;
+__crc___traceiter_fib6_table_lookup = 0x1a2f3e9b;
+__crc___SCK__tp_func_fib6_table_lookup = 0x851fe124;
+__crc_ip6_dst_alloc = 0xea868a04;
+__crc_ip6_route_lookup = 0x2f1b3bff;
+__crc_rt6_lookup = 0xaf6e064f;
+__crc_ip6_pol_route = 0xef438667;
+__crc_ip6_route_input_lookup = 0x58855fba;
+__crc_ip6_route_output_flags_noref = 0xacb8403e;
+__crc_ip6_route_output_flags = 0x5d94792e;
+__crc_ip6_update_pmtu = 0xacccd6ee;
+__crc_ip6_sk_update_pmtu = 0xc5eafe7a;
+__crc_ip6_redirect = 0xce8150a2;
+__crc_ip6_sk_redirect = 0x2c8a5071;

@@ -1,0 +1,16 @@
+__crc_ppp_register_net_channel = 0x40ed497f;
+__crc_ppp_register_channel = 0x5201532a;
+__crc_ppp_unregister_channel = 0x470e61a0;
+__crc_ppp_channel_index = 0x526baa1b;
+__crc_ppp_unit_number = 0xdc1e638c;
+__crc_ppp_dev_name = 0x7022f891;
+__crc_ppp_input = 0x0484d6d2;
+__crc_ppp_input_error = 0xf4755a00;
+__crc_ppp_output_wakeup = 0x30683555;
+__crc_ppp_register_compressor = 0xefacf7c5;
+__crc_ppp_unregister_compressor = 0xebd7fc7f;
+__crc_register_pppox_proto = 0xc8da1ad1;
+__crc_unregister_pppox_proto = 0xe0ff7a18;
+__crc_pppox_unbind_sock = 0xa8f696cd;
+__crc_pppox_ioctl = 0xe9ee8593;
+__crc_pppox_compat_ioctl = 0xf674e483;

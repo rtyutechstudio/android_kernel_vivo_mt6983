@@ -1,0 +1,4 @@
+__crc_ipv6_push_frag_opts = 0x91609dd7;
+__crc_ipv6_dup_options = 0xde9d6ae8;
+__crc_ipv6_fixup_options = 0x573b5453;
+__crc_fl6_update_dst = 0x507ebc7d;

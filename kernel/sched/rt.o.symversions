@@ -1,0 +1,2 @@
+__crc_task_may_not_preempt = 0x14740f9a;
+__crc_pick_highest_pushable_task = 0x058b96df;

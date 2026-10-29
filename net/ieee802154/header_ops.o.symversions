@@ -1,0 +1,5 @@
+__crc_ieee802154_hdr_push = 0xaa081a1f;
+__crc_ieee802154_hdr_pull = 0xce293e97;
+__crc_ieee802154_hdr_peek_addrs = 0xbd721fbc;
+__crc_ieee802154_hdr_peek = 0xf9bd80ae;
+__crc_ieee802154_max_payload = 0x87e2553b;

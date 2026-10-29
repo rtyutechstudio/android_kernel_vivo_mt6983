@@ -1,0 +1,9 @@
+__crc_key_type_user = 0xd8f1dee4;
+__crc_key_type_logon = 0x1f17ab09;
+__crc_user_preparse = 0x433ae21c;
+__crc_user_free_preparse = 0xf7a2687e;
+__crc_user_update = 0x018fe176;
+__crc_user_revoke = 0xe09a213e;
+__crc_user_destroy = 0x47c79b6f;
+__crc_user_describe = 0x021be20d;
+__crc_user_read = 0x41b55a47;

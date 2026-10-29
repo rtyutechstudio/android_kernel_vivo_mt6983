@@ -1,0 +1,3 @@
+__crc_tty_check_change = 0xb823f523;
+__crc_get_current_tty = 0x5f28ec9e;
+__crc_tty_get_pgrp = 0x8f36b83a;

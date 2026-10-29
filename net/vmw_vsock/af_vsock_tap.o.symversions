@@ -1,0 +1,3 @@
+__crc_vsock_add_tap = 0x43519f4b;
+__crc_vsock_remove_tap = 0x36298356;
+__crc_vsock_deliver_tap = 0x11542ceb;

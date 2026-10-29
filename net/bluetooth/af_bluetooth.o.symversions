@@ -1,0 +1,17 @@
+__crc_bt_sock_reclassify_lock = 0x7a68ccb2;
+__crc_bt_sock_register = 0xe7395415;
+__crc_bt_sock_unregister = 0x8fea24bd;
+__crc_bt_sock_link = 0x85bf324a;
+__crc_bt_sock_unlink = 0x946417b8;
+__crc_bt_accept_enqueue = 0x3dcd1cec;
+__crc_bt_accept_unlink = 0x8c2f2088;
+__crc_bt_accept_dequeue = 0xc881e28b;
+__crc_bt_sock_recvmsg = 0x9ef42fbb;
+__crc_bt_sock_stream_recvmsg = 0x3386f6d9;
+__crc_bt_sock_poll = 0xd25ba6bc;
+__crc_bt_sock_ioctl = 0x4494b67f;
+__crc_bt_sock_wait_state = 0xb0df7b4b;
+__crc_bt_sock_wait_ready = 0x6aafceee;
+__crc_bt_procfs_init = 0x1a4d7143;
+__crc_bt_procfs_cleanup = 0xe3f015bb;
+__crc_bt_debugfs = 0xf62a901e;

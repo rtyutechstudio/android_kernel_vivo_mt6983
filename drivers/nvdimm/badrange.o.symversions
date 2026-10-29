@@ -1,0 +1,4 @@
+__crc_badrange_init = 0x11e06ee9;
+__crc_badrange_add = 0x2e08226d;
+__crc_badrange_forget = 0x82092899;
+__crc_nvdimm_badblocks_populate = 0xbb35e398;

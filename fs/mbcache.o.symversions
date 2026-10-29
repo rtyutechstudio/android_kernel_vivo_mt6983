@@ -1,0 +1,9 @@
+__crc_mb_cache_entry_create = 0x0fd902db;
+__crc___mb_cache_entry_free = 0xceec8abd;
+__crc_mb_cache_entry_find_first = 0x23ee13fd;
+__crc_mb_cache_entry_find_next = 0x47a0cdcb;
+__crc_mb_cache_entry_get = 0xac8597d5;
+__crc_mb_cache_entry_delete = 0x018574a1;
+__crc_mb_cache_entry_touch = 0x0ce19729;
+__crc_mb_cache_create = 0xdd2c169b;
+__crc_mb_cache_destroy = 0xd5263820;

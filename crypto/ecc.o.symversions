@@ -1,0 +1,14 @@
+__crc_vli_is_zero = 0x4c281912;
+__crc_vli_from_be64 = 0x16e410ff;
+__crc_vli_from_le64 = 0xeac9b99a;
+__crc_vli_cmp = 0x92668805;
+__crc_vli_sub = 0x9f6efabd;
+__crc_vli_mod_mult_slow = 0x7c0fbb00;
+__crc_vli_mod_inv = 0x1a5faa3a;
+__crc_ecc_point_mult_shamir = 0x9263b417;
+__crc_ecc_is_key_valid = 0x671f7aa5;
+__crc_ecc_gen_privkey = 0xd6315f31;
+__crc_ecc_make_pub_key = 0xed4ae15e;
+__crc_ecc_is_pubkey_valid_partial = 0xde867c29;
+__crc_ecc_is_pubkey_valid_full = 0x188a1647;
+__crc_crypto_ecdh_shared_secret = 0xa76b31a2;
