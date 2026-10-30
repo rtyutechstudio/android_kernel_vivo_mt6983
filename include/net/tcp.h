@@ -48,6 +48,9 @@
 
 extern struct inet_hashinfo tcp_hashinfo;
 
+/* Vendor handshake_counter ABI: index 1 counts attempts, 2 counts failures. */
+void update_handshake_info(int index, int delta);
+
 extern struct percpu_counter tcp_orphan_count;
 void tcp_time_wait(struct sock *sk, int state, int timeo);
 

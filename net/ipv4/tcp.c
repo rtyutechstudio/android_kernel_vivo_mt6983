@@ -284,6 +284,29 @@
 struct percpu_counter tcp_orphan_count;
 EXPORT_SYMBOL_GPL(tcp_orphan_count);
 
+/*
+ * Vivo handshake_counter passes (1, 1) for attempts and (2, 1) for failures.
+ * The stock implementation adds a signed delta to one of 15 u32 counters;
+ * it does not take a socket argument and does not serialize the updates.
+ * Keep the same modulo-2^32 accounting, but reject invalid indices rather
+ * than reproducing the stock UBSAN array-bounds trap.
+ *
+ * This restores the counter provider only.  The stock vivo_tcp_netlink
+ * uidTcpInfoList reader/protocol is not present in this source tree; these
+ * counters must not be mistaken for a restoration of that userspace ABI.
+ */
+static u32 tcp_handshake_info[15];
+
+void update_handshake_info(int index, int delta)
+{
+	if ((unsigned int)index >= ARRAY_SIZE(tcp_handshake_info))
+		return;
+
+	WRITE_ONCE(tcp_handshake_info[index],
+		   READ_ONCE(tcp_handshake_info[index]) + (u32)delta);
+}
+EXPORT_SYMBOL(update_handshake_info);
+
 long sysctl_tcp_mem[3] __read_mostly;
 EXPORT_SYMBOL(sysctl_tcp_mem);
 
