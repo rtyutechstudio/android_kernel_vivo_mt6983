@@ -911,8 +911,26 @@ static inline void ClearPageSlabPfmemalloc(struct page *page)
  * __PG_HWPOISON is exceptional because it needs to be kept beyond page's
  * alloc-free cycle to prevent from reusing the page.
  */
+/*
+ * X80 zram's shipped module owns fixed bits 30..33, outside our enum.
+ * Clear them on allocator reuse and THP tail preparation, not at FREE checks.
+ * Do not renumber the existing flags or extend the mask across bits 24..29.
+ */
+#ifdef CONFIG_VIVO_X80_COMPAT
+#if BITS_PER_LONG != 64 || NR_PAGEFLAGS > 30
+#error "X80 zram private page flags overlap the native flags"
+#endif
+#if SECTIONS_WIDTH + NODES_WIDTH + ZONES_WIDTH + LAST_CPUPID_WIDTH + KASAN_TAG_WIDTH > 30
+#error "X80 zram private page flags overlap the high page fields"
+#endif
+#define X80_ZRAM_PAGE_FLAGS_MASK	(0xfUL << 30)
+#else
+#define X80_ZRAM_PAGE_FLAGS_MASK	0UL
+#endif
+
 #define PAGE_FLAGS_CHECK_AT_PREP	\
-	(((1UL << NR_PAGEFLAGS) - 1) & ~__PG_HWPOISON)
+	((((1UL << NR_PAGEFLAGS) - 1) & ~__PG_HWPOISON) | \
+	 X80_ZRAM_PAGE_FLAGS_MASK)
 
 #define PAGE_FLAGS_PRIVATE				\
 	(1UL << PG_private | 1UL << PG_private_2)

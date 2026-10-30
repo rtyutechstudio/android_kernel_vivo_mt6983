@@ -29,6 +29,7 @@
 #include <linux/khugepaged.h>
 
 #include <linux/uprobes.h>
+#include <trace/hooks/mm.h>
 
 #define UINSNS_PER_PAGE			(PAGE_SIZE/UPROBE_XOL_SLOT_BYTES)
 #define MAX_UPROBE_XOL_SLOTS		UINSNS_PER_PAGE
@@ -185,6 +186,9 @@ static int __replace_page(struct vm_area_struct *vma, unsigned long addr,
 		get_page(new_page);
 		page_add_new_anon_rmap(new_page, vma, addr, false);
 		lru_cache_add_inactive_or_unevictable(new_page, vma);
+#ifdef CONFIG_VIVO_X80_COMPAT
+		trace_android_vh_uprobes_replace_page(new_page, old_page);
+#endif
 	} else
 		/* no new page, just dec_mm_counter for old_page */
 		dec_mm_counter(mm, MM_ANONPAGES);

@@ -46,6 +46,7 @@
 
 #undef CREATE_TRACE_POINTS
 #include <trace/hooks/shmem_fs.h>
+#include <trace/hooks/mm.h>
 
 static struct vfsmount *shm_mnt;
 
@@ -1735,6 +1736,9 @@ static int shmem_swapin_page(struct inode *inode, pgoff_t index,
 
 	/* We have to do this with page locked to prevent races */
 	lock_page(page);
+#ifdef CONFIG_VIVO_X80_COMPAT
+	trace_android_vh_shmem_swapin_page(page);
+#endif
 	if (!PageSwapCache(page) || page_private(page) != swap.val ||
 	    !shmem_confirm_swap(mapping, index, swap)) {
 		error = -EEXIST;

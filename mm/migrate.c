@@ -54,6 +54,8 @@
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/migrate.h>
+#undef CREATE_TRACE_POINTS
+#include <trace/hooks/mm.h>
 
 #include "internal.h"
 
@@ -601,6 +603,9 @@ void migrate_page_states(struct page *newpage, struct page *page)
 		SetPageChecked(newpage);
 	if (PageMappedToDisk(page))
 		SetPageMappedToDisk(newpage);
+#ifdef CONFIG_VIVO_X80_COMPAT
+	trace_android_vh_look_around_migrate_page(page, newpage);
+#endif
 
 	/* Move dirty on pages not done by migrate_page_move_mapping() */
 	if (PageDirty(page))

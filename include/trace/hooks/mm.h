@@ -126,6 +126,26 @@ DECLARE_HOOK(android_vh_mmap_region,
 DECLARE_HOOK(android_vh_try_to_unmap_one,
 	TP_PROTO(struct vm_area_struct *vma, struct page *page, unsigned long addr, bool ret),
 	TP_ARGS(vma, page, addr, ret));
+#ifdef CONFIG_VIVO_X80_COMPAT
+/* Exact callback ABI used by the shipped X80 zram module. */
+DECLARE_HOOK(android_vh_do_anonymous_page,
+	TP_PROTO(struct vm_area_struct *vma, struct page *page),
+	TP_ARGS(vma, page));
+DECLARE_HOOK(android_vh_do_swap_page,
+	TP_PROTO(struct page *page, pte_t *pte, struct vm_fault *vmf,
+		 swp_entry_t entry),
+	TP_ARGS(page, pte, vmf, entry));
+DECLARE_HOOK(android_vh_do_wp_page,
+	TP_PROTO(struct page *page), TP_ARGS(page));
+DECLARE_HOOK(android_vh_look_around_migrate_page,
+	TP_PROTO(struct page *oldpage, struct page *newpage),
+	TP_ARGS(oldpage, newpage));
+DECLARE_HOOK(android_vh_uprobes_replace_page,
+	TP_PROTO(struct page *newpage, struct page *oldpage),
+	TP_ARGS(newpage, oldpage));
+DECLARE_HOOK(android_vh_shmem_swapin_page,
+	TP_PROTO(struct page *page), TP_ARGS(page));
+#endif
 /* macro versions of hooks are no longer required */
 
 #endif /* _TRACE_HOOK_MM_H */

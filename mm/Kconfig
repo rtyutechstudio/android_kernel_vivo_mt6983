@@ -2,6 +2,14 @@
 
 menu "Memory Management options"
 
+config VIVO_X80_COMPAT
+	bool "X80 vendor zram MM compatibility"
+	depends on ARM64 && 64BIT && VIVO_MODULE_VERMAGIC
+	help
+	  Restore the fixed private page-flag lifecycle, pool accounting and
+	  six MM trace hooks used by the shipped X80 zram module. This does
+	  not establish compatibility of all other vendor-private structures.
+
 config SELECT_MEMORY_MODEL
 	def_bool y
 	depends on ARCH_SELECT_MEMORY_MODEL

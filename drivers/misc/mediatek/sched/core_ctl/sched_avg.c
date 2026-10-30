@@ -603,6 +603,16 @@ void dec_nr_over_thres_running_by_se(void *data, struct sched_entity *se, int fl
 #endif
 
 #if IS_ENABLED(CONFIG_CFS_BANDWIDTH)
+/* Match the fair scheduler's private helper for this translation unit. */
+static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se)
+{
+#if IS_ENABLED(CONFIG_FAIR_GROUP_SCHED)
+	return se->cfs_rq;
+#else
+	return &task_rq(container_of(se, struct task_struct, se))->cfs;
+#endif
+}
+
 static inline bool cfs_bandwidth_used(void)
 {
 	return true;

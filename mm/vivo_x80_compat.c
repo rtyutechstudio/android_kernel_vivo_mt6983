@@ -71,3 +71,7 @@ EXPORT_SYMBOL(sysctl_allow_alloc_from_thppool);
 /* Incremented with a 32-bit atomic (LDADDL in vendor system_heap.ko). */
 atomic_t nr_dmapages_in_thppool = ATOMIC_INIT(0);
 EXPORT_SYMBOL(nr_dmapages_in_thppool);
+
+/* Real 32-bit pool accounting; no pages enter the disabled optional pool. */
+atomic_t nr_ezrampages_in_thppool = ATOMIC_INIT(0);
+EXPORT_SYMBOL(nr_ezrampages_in_thppool);

@@ -3401,6 +3401,9 @@ static vm_fault_t do_wp_page(struct vm_fault *vmf)
 		return wp_page_copy(vmf);
 	}
 
+#ifdef CONFIG_VIVO_X80_COMPAT
+	trace_android_vh_do_wp_page(vmf->page);
+#endif
 	/*
 	 * Take out anonymous pages first, anonymous shared vmas are
 	 * not dirty accountable.
@@ -3757,6 +3760,9 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)
 	inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
 	dec_mm_counter_fast(vma->vm_mm, MM_SWAPENTS);
 	pte = mk_pte(page, vmf->vma_page_prot);
+#ifdef CONFIG_VIVO_X80_COMPAT
+	trace_android_vh_do_swap_page(page, &pte, vmf, entry);
+#endif
 	if ((vmf->flags & FAULT_FLAG_WRITE) && reuse_swap_page(page, NULL)) {
 		pte = maybe_mkwrite(pte_mkdirty(pte), vmf->vma_flags);
 		vmf->flags &= ~FAULT_FLAG_WRITE;
@@ -3906,6 +3912,9 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 	 * the set_pte_at() write.
 	 */
 	__SetPageUptodate(page);
+#ifdef CONFIG_VIVO_X80_COMPAT
+	trace_android_vh_do_anonymous_page(vma, page);
+#endif
 
 	entry = mk_pte(page, vmf->vma_page_prot);
 	entry = pte_sw_mkyoung(entry);

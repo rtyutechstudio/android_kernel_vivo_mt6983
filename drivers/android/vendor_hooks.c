@@ -78,6 +78,14 @@
  * Export tracepoints that act as a bare tracehook (ie: have no trace event
  * associated with them) to allow external modules to probe them.
  */
+#ifdef CONFIG_VIVO_X80_COMPAT
+EXPORT_TRACEPOINT_SYMBOL_GPL(android_vh_do_anonymous_page);
+EXPORT_TRACEPOINT_SYMBOL_GPL(android_vh_do_swap_page);
+EXPORT_TRACEPOINT_SYMBOL_GPL(android_vh_do_wp_page);
+EXPORT_TRACEPOINT_SYMBOL_GPL(android_vh_look_around_migrate_page);
+EXPORT_TRACEPOINT_SYMBOL_GPL(android_vh_uprobes_replace_page);
+EXPORT_TRACEPOINT_SYMBOL_GPL(android_vh_shmem_swapin_page);
+#endif
 EXPORT_TRACEPOINT_SYMBOL_GPL(android_rvh_select_task_rq_fair);
 EXPORT_TRACEPOINT_SYMBOL_GPL(android_rvh_select_task_rq_rt);
 EXPORT_TRACEPOINT_SYMBOL_GPL(android_rvh_select_fallback_rq);
