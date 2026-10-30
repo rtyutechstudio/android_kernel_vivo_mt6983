@@ -669,6 +669,8 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
 
 	if (sugov_should_update_freq(sg_policy, time)) {
 		next_f = sugov_next_freq_shared(sg_cpu, time);
+		/* Stock shared-path hook: before commit/rate-limit, including cached freq. */
+		trace_android_vh_sugov_update_shared(&next_f, sg_cpu->cpu);
 
 		if (sg_policy->policy->fast_switch_enabled)
 			sugov_fast_switch(sg_policy, time, next_f);
