@@ -83,6 +83,107 @@
 DEFINE_MUTEX(cgroup_mutex);
 DEFINE_SPINLOCK(css_set_lock);
 
+/* Shared with shipped X80 pem_driver tg publication/removal and get. */
+DEFINE_SPINLOCK(g_tsk_tg_lock);
+EXPORT_SYMBOL(g_tsk_tg_lock);
+
+/* Measured stock ABI, not a replacement allocation owned by this kernel. */
+struct x80_pem_cfg {
+	u8 reserved[0x76];
+	u16 flags;
+};
+struct x80_pem_tg {
+	u8 reserved0[0x18];
+	struct x80_pem_cfg *cfg;
+	u8 reserved1[8];
+	atomic_t refs;
+	u8 reserved2[0x66 - 0x2c];
+	u16 flags;
+	u8 reserved3[0x78 - 0x68];
+	char cpu_path[40];
+	char cpuset_path[40];
+};
+static_assert(offsetof(struct task_struct, android_vendor_data1[7]) == 2840);
+static_assert(offsetof(struct task_struct, android_vendor_data1[8]) == 2848);
+static_assert(offsetof(struct task_struct, android_oem_data1[18]) == 3440);
+static_assert(offsetof(struct x80_pem_cfg, flags) == 0x76);
+static_assert(offsetof(struct x80_pem_tg, cfg) == 0x18);
+static_assert(offsetof(struct x80_pem_tg, refs) == 0x28);
+static_assert(offsetof(struct x80_pem_tg, flags) == 0x66);
+static_assert(offsetof(struct x80_pem_tg, cpu_path) == 0x78);
+static_assert(offsetof(struct x80_pem_tg, cpuset_path) == 0xa0);
+static_assert(sizeof(struct x80_pem_tg) == 200);
+
+/* Called under css_set_lock + RCU, before collecting migration sources.
+ * Match stock policy/ref ownership; optional stock systrace is omitted.
+ */
+static bool x80_pem_skip_migration(struct cgroup *dst,
+				 struct task_struct *task, int ssid)
+{
+	struct x80_pem_tg *tg;
+	struct x80_pem_cfg *cfg;
+	struct cgroup *path_cgrp;
+	unsigned long irqflags;
+	unsigned int mask;
+	u16 cfg_flags, flags;
+	char *saved, path[40];
+	int len;
+	bool skip = false;
+
+	spin_lock_irqsave(&g_tsk_tg_lock, irqflags);
+	tg = (void *)(unsigned long)READ_ONCE(task->android_vendor_data1[7]);
+	if (!IS_ERR_OR_NULL(tg))
+		atomic_inc(&tg->refs);
+	spin_unlock_irqrestore(&g_tsk_tg_lock, irqflags);
+	if (IS_ERR_OR_NULL(tg))
+		return false;
+	cfg = READ_ONCE(tg->cfg);
+	if (IS_ERR_OR_NULL(cfg))
+		goto put;
+	cfg_flags = READ_ONCE(cfg->flags);
+	flags = READ_ONCE(tg->flags);
+	if (ssid == cpuacct_cgrp_id) {
+		skip = (cfg_flags & flags & 1) != 0;
+		goto put;
+	}
+	if (ssid == cpuset_cgrp_id) {
+		mask = 2;
+		saved = tg->cpuset_path;
+	} else if (ssid == cpu_cgrp_id) {
+		mask = 0xf0;
+		saved = tg->cpu_path;
+	} else {
+		goto put;
+	}
+	if (!(cfg_flags & mask))
+		goto put;
+	if (flags & mask) {
+		if (ssid == cpu_cgrp_id && ((flags ^ cfg_flags) & mask))
+			goto put;
+		skip = true;
+		path_cgrp = dst;
+	} else {
+		path_cgrp = task_css_set(task)->subsys[ssid]->cgroup;
+	}
+	/* Reserve '/' and NUL within the fixed 40-byte vendor ABI. Unlike
+	 * stock strcpy/append, never overflow a long kernfs path.
+	 */
+	len = kernfs_path_from_node(path_cgrp->kn, NULL, path, sizeof(path) - 1);
+	if (len < 0 || len > sizeof(path) - 2) {
+		skip = false;
+		goto put;
+	}
+	len = strnlen(path, sizeof(path) - 1);
+	if (len && path[len - 1] != '/')
+		path[len++] = '/';
+	path[len] = '\0';
+	memcpy(saved, path, len + 1);
+put:
+	if (atomic_dec_and_test(&tg->refs))
+		kfree(tg);
+	return skip;
+}
+
 #ifdef CONFIG_PROVE_RCU
 EXPORT_SYMBOL_GPL(cgroup_mutex);
 EXPORT_SYMBOL_GPL(css_set_lock);
@@ -2741,14 +2842,20 @@ int cgroup_attach_task(struct cgroup *dst_cgrp, struct task_struct *leader,
 {
 	DEFINE_CGROUP_MGCTX(mgctx);
 	struct task_struct *task;
-	int ret = 0;
+	int ret = 0, ssid;
+
+	/* Stock selects the first subsystem attached to the destination. */
+	for (ssid = 0; ssid < CGROUP_SUBSYS_COUNT; ssid++)
+		if (dst_cgrp->subsys[ssid])
+			break;
 
 	/* look up all src csets */
 	spin_lock_irq(&css_set_lock);
 	rcu_read_lock();
 	task = leader;
 	do {
-		cgroup_migrate_add_src(task_css_set(task), dst_cgrp, &mgctx);
+		if (!x80_pem_skip_migration(dst_cgrp, task, ssid))
+			cgroup_migrate_add_src(task_css_set(task), dst_cgrp, &mgctx);
 		if (!threadgroup)
 			break;
 	} while_each_thread(leader, task);
