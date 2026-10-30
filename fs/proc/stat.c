@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/cpumask.h>
+#include <linux/export.h>
 #include <linux/fs.h>
 #include <linux/init.h>
 #include <linux/interrupt.h>
@@ -23,7 +24,10 @@
 
 #ifdef arch_idle_time
 
-static u64 get_idle_time(struct kernel_cpustat *kcs, int cpu)
+/* X80 zcache resolves this real proc-stat helper by its kallsyms name.
+ * External linkage prevents ThinLTO from deleting/renaming the ABI entry.
+ */
+u64 get_idle_time(struct kernel_cpustat *kcs, int cpu)
 {
 	u64 idle;
 
@@ -45,7 +49,10 @@ static u64 get_iowait_time(struct kernel_cpustat *kcs, int cpu)
 
 #else
 
-static u64 get_idle_time(struct kernel_cpustat *kcs, int cpu)
+/* X80 zcache resolves this real proc-stat helper by its kallsyms name.
+ * External linkage prevents ThinLTO from deleting/renaming the ABI entry.
+ */
+u64 get_idle_time(struct kernel_cpustat *kcs, int cpu)
 {
 	u64 idle, idle_usecs = -1ULL;
 
@@ -78,6 +85,7 @@ static u64 get_iowait_time(struct kernel_cpustat *kcs, int cpu)
 }
 
 #endif
+EXPORT_SYMBOL(get_idle_time);
 
 static void show_irq_gap(struct seq_file *p, unsigned int gap)
 {
