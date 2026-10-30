@@ -8,6 +8,15 @@ config DEFCONFIG_LIST
 	default "/boot/config-$(shell,uname -r)"
 	default "arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG)"
 
+config VIVO_X80_BOOTMARK
+	bool "X80 diagnostic markers in the existing PL/LK log buffer"
+	depends on ARM64 && OF && ARCH_MEDIATEK
+	default n
+	help
+	  Opt-in PD2183 diagnostics only. Append bounded build/stage tokens to
+	  the verified existing bootloader log buffer, without clearing pstore
+	  or writing storage. Retention across reset requires a positive test.
+
 config CC_VERSION_TEXT
 	string
 	default "$(CC_VERSION_TEXT)"

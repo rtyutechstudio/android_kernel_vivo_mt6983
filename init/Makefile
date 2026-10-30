@@ -6,6 +6,7 @@
 ccflags-y := -fno-function-sections -fno-data-sections
 
 obj-y                          := main.o version.o mounts.o
+obj-$(CONFIG_VIVO_X80_BOOTMARK) += x80_bootmark.o
 ifneq ($(CONFIG_BLK_DEV_INITRD),y)
 obj-y                          += noinitramfs.o
 else
