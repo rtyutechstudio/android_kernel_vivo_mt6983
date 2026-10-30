@@ -978,7 +978,24 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 #ifdef CONFIG_MEMCG
 	tsk->active_memcg = NULL;
 #endif
+	/* X80 stock dup_task_struct resets the vendor policy region, but
+	 * preserves vendor[1]/[2] until the pem dup hook clears its pointers.
+	 * Merge the stock b28..f08 memset and final f08 zero into one span.
+	 */
+	*(u32 *)&tsk->android_vendor_data1[0] = 0;
+	memset(&tsk->android_vendor_data1[3], 0,
+	       offsetof(struct task_struct, android_oem_data1) +
+	       sizeof(tsk->android_oem_data1) -
+	       offsetof(struct task_struct, android_vendor_data1[3]));
+	tsk->android_kabi_reserved2 = 0;
+	tsk->android_kabi_reserved3 = 0;
+	tsk->android_kabi_reserved4 = 0;
 	trace_android_vh_dup_task_struct(tsk, orig);
+	/* Stock OEM policy overlay at d28..e70, initialized after dup hooks. */
+	memset((u8 *)tsk->android_oem_data1 + 0x18, 0, 0x148);
+	((u8 *)tsk->android_oem_data1)[0x19] = 0xff;
+	INIT_LIST_HEAD((struct list_head *)((u8 *)tsk->android_oem_data1 + 0x90));
+	((u8 *)tsk->android_oem_data1)[0xe2] = 0xff;
 	return tsk;
 
 free_stack:

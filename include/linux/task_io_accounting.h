@@ -30,11 +30,23 @@ struct task_io_accounting {
 	 */
 	u64 read_bytes;
 
+	/* X80 stock ABI: bytes charged by non-leader threads to the leader. */
+	u64 thread_read_bytes;
+
 	/*
 	 * The number of bytes which this task has caused, or shall cause to be
 	 * written to disk.
 	 */
 	u64 write_bytes;
+	u64 thread_write_bytes;
+
+	/* Last aggregate byte counts and real-time timestamps for I/O tracing.
+	 * Offsets recovered from stock submit_bio/task_io_account_write.
+	 */
+	u64 last_read_bytes;
+	u64 last_write_bytes;
+	u64 last_read_time_ns;
+	u64 last_write_time_ns;
 
 	/*
 	 * A task can cause "negative" IO too.  If this task truncates some

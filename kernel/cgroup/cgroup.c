@@ -103,9 +103,11 @@ struct x80_pem_tg {
 	char cpu_path[40];
 	char cpuset_path[40];
 };
-static_assert(offsetof(struct task_struct, android_vendor_data1[7]) == 2840);
-static_assert(offsetof(struct task_struct, android_vendor_data1[8]) == 2848);
-static_assert(offsetof(struct task_struct, android_oem_data1[18]) == 3440);
+static_assert(offsetof(struct task_struct, android_vendor_data1) == 2832);
+static_assert(offsetof(struct task_struct, android_vendor_data1[1]) == 2840);
+static_assert(offsetof(struct task_struct, android_vendor_data1[2]) == 2848);
+static_assert(offsetof(struct task_struct, android_oem_data1[12]) == 3440);
+static_assert(offsetof(struct task_struct, cgroups) == 2448);
 static_assert(offsetof(struct x80_pem_cfg, flags) == 0x76);
 static_assert(offsetof(struct x80_pem_tg, cfg) == 0x18);
 static_assert(offsetof(struct x80_pem_tg, refs) == 0x28);
@@ -131,7 +133,7 @@ static bool x80_pem_skip_migration(struct cgroup *dst,
 	bool skip = false;
 
 	spin_lock_irqsave(&g_tsk_tg_lock, irqflags);
-	tg = (void *)(unsigned long)READ_ONCE(task->android_vendor_data1[7]);
+	tg = (void *)(unsigned long)READ_ONCE(task->android_vendor_data1[1]);
 	if (!IS_ERR_OR_NULL(tg))
 		atomic_inc(&tg->refs);
 	spin_unlock_irqrestore(&g_tsk_tg_lock, irqflags);

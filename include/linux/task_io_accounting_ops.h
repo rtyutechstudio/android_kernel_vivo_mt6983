@@ -10,7 +10,11 @@
 #ifdef CONFIG_TASK_IO_ACCOUNTING
 static inline void task_io_account_read(size_t bytes)
 {
-	current->ioac.read_bytes += bytes;
+	struct task_struct *task = current;
+
+	task->ioac.read_bytes += bytes;
+	if (task->group_leader && task->pid != task->tgid)
+		task->group_leader->ioac.thread_read_bytes += bytes;
 }
 
 /*
@@ -24,7 +28,11 @@ static inline unsigned long task_io_get_inblock(const struct task_struct *p)
 
 static inline void task_io_account_write(size_t bytes)
 {
-	current->ioac.write_bytes += bytes;
+	struct task_struct *task = current;
+
+	task->ioac.write_bytes += bytes;
+	if (task->group_leader && task->pid != task->tgid)
+		task->group_leader->ioac.thread_write_bytes += bytes;
 }
 
 /*

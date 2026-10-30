@@ -1377,7 +1377,10 @@ struct task_struct {
 	struct callback_head		mce_kill_me;
 #endif
 	ANDROID_VENDOR_DATA_ARRAY(1, 64);
-	ANDROID_OEM_DATA_ARRAY(1, 32);
+	/* X80 stock dup/switch ABI: OEM region 0xd10..0xf10 (64 u64),
+	 * eight KABI words then thread.cpu_context at 0xf50.
+	 */
+	ANDROID_OEM_DATA_ARRAY(1, 64);
 
 	ANDROID_KABI_RESERVE(1);
 	ANDROID_KABI_RESERVE(2);
