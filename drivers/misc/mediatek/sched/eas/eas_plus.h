@@ -58,8 +58,10 @@ extern int sort_thermal_headroom(struct cpumask *cpus, int *cpu_order);
 extern unsigned int thermal_headroom_interval_tick;
 #endif
 
-extern void mtk_freq_limit_notifier_register(void);
+extern int mtk_freq_limit_notifier_register(void);
+extern void mtk_freq_limit_notifier_unregister(void);
 extern int init_sram_info(void);
+extern void cleanup_sram_info(void);
 extern void mtk_tick_entry(void *data, struct rq *rq);
 extern void mtk_set_wake_flags(void *data, int *wake_flags, unsigned int *mode);
 extern void mtk_update_cpu_capacity(void *data, int cpu, unsigned long *capacity);

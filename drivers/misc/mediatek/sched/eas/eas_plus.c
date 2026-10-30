@@ -332,6 +332,13 @@ int init_sram_info(void)
 	return 0;
 }
 
+/* Only used before any scheduler hook can access the mapping. */
+void cleanup_sram_info(void)
+{
+	iounmap(sram_base_addr);
+	sram_base_addr = NULL;
+}
+
 void mtk_tick_entry(void *data, struct rq *rq)
 {
 	void __iomem *base = sram_base_addr;

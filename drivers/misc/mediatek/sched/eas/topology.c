@@ -83,54 +83,85 @@ static int freq_limit_min_notifier_call(struct notifier_block *nb,
 	return 0;
 }
 
-void mtk_freq_limit_notifier_register(void)
+/* Keep constraints alive until preparation is rolled back, or for boot life. */
+static struct cpufreq_policy **freq_limit_policies;
+static int notifier_pairs;
+
+void mtk_freq_limit_notifier_unregister(void)
+{
+	int i;
+
+	for (i = notifier_pairs - 1; i >= 0; i--) {
+		freq_qos_remove_notifier(&freq_limit_policies[i]->constraints,
+			FREQ_QOS_MIN, freq_limit_min_notifier + i);
+		freq_qos_remove_notifier(&freq_limit_policies[i]->constraints,
+			FREQ_QOS_MAX, freq_limit_max_notifier + i);
+	}
+	notifier_pairs = 0;
+	for (i = 0; i < policy_num; i++)
+		cpufreq_cpu_put(freq_limit_policies[i]);
+	policy_num = 0;
+	kfree(freq_limit_policies);
+	kfree(freq_limit_min_notifier);
+	kfree(freq_limit_max_notifier);
+	freq_limit_policies = NULL;
+	freq_limit_min_notifier = NULL;
+	freq_limit_max_notifier = NULL;
+}
+
+int mtk_freq_limit_notifier_register(void)
 {
 	struct cpufreq_policy *policy;
-	int cpu, cpu_idx, policy_idx = 0, ret;
+	int cpu, cpu_idx, i, ret = -ENOMEM;
 
-	policy_num = 0;
+	freq_limit_policies = kcalloc(num_possible_cpus(),
+				     sizeof(*freq_limit_policies), GFP_KERNEL);
+	freq_limit_max_notifier = kcalloc(num_possible_cpus(),
+				 sizeof(*freq_limit_max_notifier), GFP_KERNEL);
+	freq_limit_min_notifier = kcalloc(num_possible_cpus(),
+				 sizeof(*freq_limit_min_notifier), GFP_KERNEL);
+	if (!freq_limit_policies || !freq_limit_max_notifier ||
+	    !freq_limit_min_notifier)
+		goto fail;
+
+	/* Snapshot policies before publishing any notifier callbacks. */
 	for_each_possible_cpu(cpu) {
 		policy = cpufreq_cpu_get(cpu);
-		if (policy) {
-			for_each_cpu(cpu_idx, policy->related_cpus)
-				per_cpu(policy_id_for_cpu, cpu_idx) = policy_num;
-			policy_num++;
-			cpu = cpumask_last(policy->related_cpus);
-			cpufreq_cpu_put(policy);
-		}
+		if (!policy)
+			continue;
+		for_each_cpu(cpu_idx, policy->related_cpus)
+			per_cpu(policy_id_for_cpu, cpu_idx) = policy_num;
+		freq_limit_policies[policy_num++] = policy;
+		cpu = cpumask_last(policy->related_cpus);
 	}
 
-	freq_limit_max_notifier = kcalloc(policy_num, sizeof(struct notifier_block), GFP_KERNEL);
-	freq_limit_min_notifier = kcalloc(policy_num, sizeof(struct notifier_block), GFP_KERNEL);
-
-	for_each_possible_cpu(cpu) {
-		if (policy_idx >= policy_num) {
-			pr_info("mtk_freq_limit_notifier_register: policy_idx over-index\n");
-			break;
-		}
-		policy = cpufreq_cpu_get(cpu);
-
-		if (policy) {
-			freq_limit_max_notifier[policy_idx].notifier_call
-				= freq_limit_max_notifier_call;
-			freq_limit_min_notifier[policy_idx].notifier_call
-				= freq_limit_min_notifier_call;
-
-			ret = freq_qos_add_notifier(&policy->constraints, FREQ_QOS_MAX,
-				freq_limit_max_notifier + policy_idx);
-			if (ret)
-				pr_info("freq_qos_add_notifier freq_limit_max_notifier failed\n");
-
-			ret = freq_qos_add_notifier(&policy->constraints, FREQ_QOS_MIN,
-				freq_limit_min_notifier + policy_idx);
-			if (ret)
-				pr_info("freq_qos_add_notifier freq_limit_min_notifier failed\n");
-
-			policy_idx++;
-			cpu = cpumask_last(policy->related_cpus);
-			cpufreq_cpu_put(policy);
-		}
+	if (!policy_num) {
+		ret = -ENODEV;
+		goto fail;
 	}
+
+	for (i = 0; i < policy_num; i++) {
+		policy = freq_limit_policies[i];
+		freq_limit_max_notifier[i].notifier_call = freq_limit_max_notifier_call;
+		freq_limit_min_notifier[i].notifier_call = freq_limit_min_notifier_call;
+		ret = freq_qos_add_notifier(&policy->constraints, FREQ_QOS_MAX,
+					  freq_limit_max_notifier + i);
+		if (ret)
+			goto fail;
+		ret = freq_qos_add_notifier(&policy->constraints, FREQ_QOS_MIN,
+					  freq_limit_min_notifier + i);
+		if (ret) {
+			freq_qos_remove_notifier(&policy->constraints, FREQ_QOS_MAX,
+					 freq_limit_max_notifier + i);
+			goto fail;
+		}
+		notifier_pairs++;
+	}
+	return 0;
+
+fail:
+	mtk_freq_limit_notifier_unregister();
+	return ret;
 }
 
 void mtk_update_cpu_capacity(void *data, int cpu, unsigned long *capacity)

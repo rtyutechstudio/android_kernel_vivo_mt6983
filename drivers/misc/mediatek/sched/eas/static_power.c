@@ -249,6 +249,8 @@ static struct platform_driver mtk_static_power_driver = {
 	.driver = {
 		.name = "mtk-lkg",
 		.of_match_table = mtk_static_power_match,
+		/* Global leakage/proc users retain the devm mapping for boot life. */
+		.suppress_bind_attrs = true,
 	},
 };
 

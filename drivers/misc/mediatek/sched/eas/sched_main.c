@@ -113,33 +113,49 @@ static void sched_queue_task_hook(void *data, struct rq *rq, struct task_struct 
 #endif
 }
 
-static void mtk_sched_trace_init(void)
-{
-	int ret = 0;
+/* Read-only status: resident does not imply all registrations succeeded. */
+static int registration_error;
+static char *registration_failed_stage = "none";
+static const struct kernel_param_ops registration_error_ops = {
+	.get = param_get_int,
+};
+static const struct kernel_param_ops registration_stage_ops = {
+	.get = param_get_charp,
+};
+module_param_cb(registration_error, &registration_error_ops,
+		&registration_error, 0444);
+MODULE_PARM_DESC(registration_error, "First boot-lifetime registration error");
+module_param_cb(registration_failed_stage, &registration_stage_ops,
+		&registration_failed_stage, 0444);
+MODULE_PARM_DESC(registration_failed_stage, "First failed registration stage");
 
+static void __init mtk_sched_registration_result(const char *stage, int ret)
+{
+	if (!ret)
+		return;
+	if (!registration_error) {
+		registration_error = ret;
+		registration_failed_stage = (char *)stage;
+	}
+	pr_crit("scheduler: boot-lifetime registration %s failed: %d; retaining module, DEGRADED\n",
+		stage, ret);
+}
+
+#define MTK_REGISTER_HOOK(name, probe, data) \
+	mtk_sched_registration_result(#name ":" #probe, \
+		register_trace_##name(probe, data))
+
+static void __init mtk_sched_trace_init(void)
+{
 	enqueue = 1;
 	dequeue = -1;
 
-	ret = register_trace_android_rvh_enqueue_task(sched_queue_task_hook, &enqueue);
-	if (ret)
-		pr_info("register android_rvh_enqueue_task failed!\n");
-	ret = register_trace_android_rvh_dequeue_task(sched_queue_task_hook, &dequeue);
-	if (ret)
-		pr_info("register android_rvh_dequeue_task failed!\n");
+	MTK_REGISTER_HOOK(android_rvh_enqueue_task, sched_queue_task_hook, &enqueue);
+	MTK_REGISTER_HOOK(android_rvh_dequeue_task, sched_queue_task_hook, &dequeue);
 
-	ret = register_trace_pelt_se_tp(sched_task_util_hook, NULL);
-	if (ret)
-		pr_info("register sched_task_util_hook failed!\n");
+	MTK_REGISTER_HOOK(pelt_se_tp, sched_task_util_hook, NULL);
 
-	ret = register_trace_pelt_se_tp(sched_task_uclamp_hook, NULL);
-	if (ret)
-		pr_info("register sched_task_uclamp_hook failed!\n");
-}
-
-static void mtk_sched_trace_exit(void)
-{
-	unregister_trace_pelt_se_tp(sched_task_util_hook, NULL);
-	unregister_trace_pelt_se_tp(sched_task_uclamp_hook, NULL);
+	MTK_REGISTER_HOOK(pelt_se_tp, sched_task_uclamp_hook, NULL);
 }
 
 static int __init mtk_scheduler_init(void)
@@ -150,94 +166,79 @@ static int __init mtk_scheduler_init(void)
 	if (ret)
 		return ret;
 
-	mtk_static_power_init();
-
 #if IS_ENABLED(CONFIG_MTK_EAS)
-	mtk_freq_limit_notifier_register();
-
 	ret = init_sram_info();
 	if (ret)
-		return ret;
+		goto cleanup_sysfs;
 
-	ret = register_trace_android_rvh_find_busiest_group(
-			mtk_find_busiest_group, NULL);
+	ret = mtk_freq_limit_notifier_register();
 	if (ret)
-		pr_info("register android_rvh_find_busiest_group failed\n");
-
-	ret = register_trace_android_rvh_find_energy_efficient_cpu(
-			mtk_find_energy_efficient_cpu, NULL);
-	if (ret)
-		pr_info("register android_rvh_find_energy_efficient_cpu failed\n");
-
-	ret = register_trace_android_rvh_cpu_overutilized(
-			mtk_cpu_overutilized, NULL);
-	if (ret)
-		pr_info("register trace_android_rvh_cpu_overutilized failed\n");
-
-	ret = register_trace_android_rvh_tick_entry(
-			mtk_tick_entry, NULL);
-	if (ret)
-		pr_info("register android_rvh_tick_entry failed\n");
-
-	ret = register_trace_android_vh_set_wake_flags(
-			mtk_set_wake_flags, NULL);
-	if (ret)
-		pr_info("register android_vh_set_wake_flags failed\n");
-
-	ret = register_trace_android_rvh_update_cpu_capacity(
-			mtk_update_cpu_capacity, NULL);
-	if (ret)
-		pr_info("register android_rvh_update_cpu_capacity failed\n");
-
-#if IS_ENABLED(CONFIG_MTK_NEWIDLE_BALANCE)
-	ret = register_trace_android_rvh_sched_newidle_balance(
-			mtk_sched_newidle_balance, NULL);
-	if (ret)
-		pr_info("register android_rvh_sched_newidle_balance failed\n");
-#endif
+		goto cleanup_sram;
 #endif
 
-	ret = register_trace_android_vh_scheduler_tick(hook_scheduler_tick, NULL);
-	if (ret)
-		pr_info("scheduler: register scheduler_tick hooks failed, returned %d\n", ret);
-
-	ret = register_trace_android_rvh_after_enqueue_task(mtk_hook_after_enqueue_task, NULL);
-	if (ret)
-		pr_info("register android_rvh_after_enqueue_task failed, returned %d\n", ret);
-
-#if IS_ENABLED(CONFIG_MTK_SCHED_BIG_TASK_ROTATE)
-	ret = register_trace_android_rvh_new_task_stats(rotat_task_stats, NULL);
-	if (ret)
-		pr_info("register android_rvh_new_task_stats failed, returned %d\n", ret);
-
-	ret = register_trace_task_newtask(rotat_task_newtask, NULL);
-	if (ret)
-		pr_info("register trace_task_newtask failed, returned %d\n", ret);
-#endif
-	ret = register_trace_android_rvh_select_task_rq_rt(mtk_select_task_rq_rt, NULL);
-	if (ret)
-		pr_info("register mtk_select_task_rq_rt hooks failed, returned %d\n", ret);
+	/*
+	 * Commit point: static_power may publish proc ops during driver probing
+	 * and has no teardown API, even if driver registration later fails.
+	 * Restricted vendor hooks likewise cannot be unregistered (see
+	 * trace/hooks/vendor_hooks.h). From BEFORE this call, NEVER return an
+	 * error: the module loader could free already published callbacks.
+	 * This module deliberately has no module_exit and lives until reboot.
+	 */
+	ret = mtk_static_power_init();
+	mtk_sched_registration_result("static_power", ret);
 
 	sched_asym_cpucapacity_init();
 
+#if IS_ENABLED(CONFIG_MTK_EAS)
+
+	MTK_REGISTER_HOOK(android_rvh_find_busiest_group, mtk_find_busiest_group, NULL);
+
+	MTK_REGISTER_HOOK(android_rvh_find_energy_efficient_cpu, mtk_find_energy_efficient_cpu, NULL);
+
+	MTK_REGISTER_HOOK(android_rvh_cpu_overutilized, mtk_cpu_overutilized, NULL);
+
+	MTK_REGISTER_HOOK(android_rvh_tick_entry, mtk_tick_entry, NULL);
+
+	MTK_REGISTER_HOOK(android_vh_set_wake_flags, mtk_set_wake_flags, NULL);
+
+	MTK_REGISTER_HOOK(android_rvh_update_cpu_capacity, mtk_update_cpu_capacity, NULL);
+
+#if IS_ENABLED(CONFIG_MTK_NEWIDLE_BALANCE)
+	MTK_REGISTER_HOOK(android_rvh_sched_newidle_balance, mtk_sched_newidle_balance, NULL);
+#endif
+#endif
+
+	MTK_REGISTER_HOOK(android_vh_scheduler_tick, hook_scheduler_tick, NULL);
+
+	MTK_REGISTER_HOOK(android_rvh_after_enqueue_task, mtk_hook_after_enqueue_task, NULL);
+
+#if IS_ENABLED(CONFIG_MTK_SCHED_BIG_TASK_ROTATE)
+	MTK_REGISTER_HOOK(android_rvh_new_task_stats, rotat_task_stats, NULL);
+
+	MTK_REGISTER_HOOK(task_newtask, rotat_task_newtask, NULL);
+#endif
+	MTK_REGISTER_HOOK(android_rvh_select_task_rq_rt, mtk_select_task_rq_rt, NULL);
+
 	mtk_sched_trace_init();
 
-	return ret;
+	if (registration_error)
+		pr_crit("scheduler: DEGRADED boot-lifetime init; first failure %s: %d; reboot required to retry\n",
+			registration_failed_stage, registration_error);
+	else
+		pr_info("scheduler: boot-lifetime registrations complete; unload unsupported\n");
+	return 0;
 
-}
-
-static void __exit mtk_scheduler_exit(void)
-{
-	mtk_sched_trace_exit();
-	unregister_trace_android_vh_scheduler_tick(hook_scheduler_tick, NULL);
-#if IS_ENABLED(CONFIG_MTK_SCHED_BIG_TASK_ROTATE)
-	unregister_trace_task_newtask(rotat_task_newtask, NULL);
+#if IS_ENABLED(CONFIG_MTK_EAS)
+cleanup_sram:
+	cleanup_sram_info();
+cleanup_sysfs:
 #endif
 	cleanup_sched_common_sysfs();
+	pr_err("scheduler: preparation failed: %d; rolled back\n", ret);
+	return ret;
 }
 
 module_init(mtk_scheduler_init);
-module_exit(mtk_scheduler_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("MediaTek scheduler");
