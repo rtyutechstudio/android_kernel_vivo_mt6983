@@ -72,6 +72,86 @@ int rsc_base_read(unsigned int i, struct rsc_base_snapshot *out)
  return 0;
 }
 EXPORT_SYMBOL_GPL(rsc_base_read);
+/* New same-tree APIs: no compatibility pointers escape. */
+int rsc_base_read_all(struct rsc_base_snapshot out[RSC_BASE_CLUSTERS])
+{
+ unsigned long f;
+ int i;
+ if (!out)
+  return -EINVAL;
+ raw_spin_lock_irqsave(&state_lock, f);
+ if (!ready_locked()) {
+  raw_spin_unlock_irqrestore(&state_lock, f);
+  return -ENODATA;
+ }
+ for (i = 0; i < RSC_BASE_CLUSTERS; i++)
+  out[i] = (struct rsc_base_snapshot) {
+   .min = live_min[i], .max = rsc_max_freq[i],
+   .old = rsc_cpu_freqs[i].old, .cur = rsc_cpu_freqs[i].new,
+   .valid = true,
+  };
+ raw_spin_unlock_irqrestore(&state_lock, f);
+ return 0;
+}
+EXPORT_SYMBOL_GPL(rsc_base_read_all);
+
+int rsc_base_masks(cpumask_t *little, cpumask_t *mid, cpumask_t *big)
+{
+ unsigned long f;
+ if (!little || !mid || !big)
+  return -EINVAL;
+ raw_spin_lock_irqsave(&state_lock, f);
+ if (!ready_locked()) {
+  raw_spin_unlock_irqrestore(&state_lock, f);
+  return -ENODATA;
+ }
+ cpumask_copy(little, &slots[cluster_slot[0]].mask);
+ cpumask_copy(mid, &slots[cluster_slot[1]].mask);
+ cpumask_copy(big, &slots[cluster_slot[2]].mask);
+ raw_spin_unlock_irqrestore(&state_lock, f);
+ return 0;
+}
+EXPORT_SYMBOL_GPL(rsc_base_masks);
+
+int rsc_base_thermal_read(cpumask_t *out)
+{
+ unsigned long f;
+ if (!out)
+  return -EINVAL;
+ raw_spin_lock_irqsave(&state_lock, f);
+ if (!ready_locked()) {
+  raw_spin_unlock_irqrestore(&state_lock, f);
+  return -ENODATA;
+ }
+ /* nr_cpumask_bits <= NR_CPUS32 fits one native word on this ARM64 target.
+  * Matches atomic successful-commit writer; no action-in-progress guarantee.
+  */
+ BUILD_BUG_ON(NR_CPUS > BITS_PER_LONG);
+ cpumask_bits(out)[0] = READ_ONCE(cpumask_bits(&cpus_paused_by_thermal)[0]);
+ raw_spin_unlock_irqrestore(&state_lock, f);
+ return 0;
+}
+EXPORT_SYMBOL_GPL(rsc_base_thermal_read);
+
+struct kobject *rsc_base_kobject_get(void)
+{
+ struct kobject *root = NULL;
+ unsigned long f;
+ raw_spin_lock_irqsave(&state_lock, f);
+ /* Root is permanent after armed. Caller receives a counted reference. */
+ if (ready_locked() && rsc_root_dir)
+  root = kobject_get(rsc_root_dir);
+ raw_spin_unlock_irqrestore(&state_lock, f);
+ return root;
+}
+EXPORT_SYMBOL_GPL(rsc_base_kobject_get);
+
+void rsc_base_kobject_put(struct kobject *root)
+{
+ kobject_put(root);
+}
+EXPORT_SYMBOL_GPL(rsc_base_kobject_put);
+
 static int find_owner(struct cpufreq_policy *p)
 {
  int i;

@@ -68,4 +68,5 @@ extern unsigned int get_sched_capacity_margin_dvfs(void);
 #endif
 
 extern unsigned long pd_get_opp_capacity(int cpu, int opp);
+int pd_get_nr_caps(int cpu);
 #endif /* __CPUFREQ_H__ */

@@ -39,6 +39,23 @@ unsigned long pd_get_opp_capacity(int cpu, int opp)
 }
 EXPORT_SYMBOL_GPL(pd_get_opp_capacity);
 
+/* Table is immutable after successful init; owning module has no exit. */
+int pd_get_nr_caps(int cpu)
+{
+ int i;
+ if (cpu < 0 || cpu >= nr_cpu_ids || !cpu_possible(cpu))
+  return -EINVAL;
+ if (!pd_capacity_tbl)
+  return -ENODATA;
+ for (i = 0; i < pd_count; i++) {
+  const struct pd_capacity_info *info = &pd_capacity_tbl[i];
+  if (cpumask_test_cpu(cpu, &info->cpus))
+   return info->caps && info->nr_caps > 0 ? info->nr_caps : -ENODATA;
+ }
+ return -ENODEV;
+}
+EXPORT_SYMBOL_GPL(pd_get_nr_caps);
+
 static void free_capacity_table(void)
 {
 	int i;
@@ -53,6 +70,8 @@ static void free_capacity_table(void)
 	}
 	kfree(pd_capacity_tbl);
 	pd_capacity_tbl = NULL;
+	pd_count = 0;
+	entry_count = 0;
 }
 
 static int init_capacity_table(void)
@@ -143,6 +162,8 @@ static int alloc_capacity_table(void)
 	int ret = 0;
 	int cur_tbl = 0;
 
+	pd_count = 0;
+	entry_count = 0;
 	pd_capacity_tbl = kcalloc(MAX_PD_COUNT, sizeof(struct pd_capacity_info),
 			GFP_KERNEL);
 	if (!pd_capacity_tbl)
@@ -160,7 +181,10 @@ static int alloc_capacity_table(void)
 		if (i != cpumask_first(to_cpumask(pd->cpus)))
 			continue;
 
-		WARN_ON(cur_tbl >= MAX_PD_COUNT);
+		if (cur_tbl >= MAX_PD_COUNT) {
+            ret = -E2BIG;
+            goto fail;
+        }
 
 		nr_caps = pd->nr_perf_states;
 		pd_capacity_tbl[cur_tbl].nr_caps = nr_caps;
@@ -176,6 +200,7 @@ static int alloc_capacity_table(void)
 		entry_count += nr_caps;
 
 		cur_tbl++;
+		pd_count = cur_tbl;
 	}
 
 	pd_count = cur_tbl;
@@ -184,6 +209,7 @@ static int alloc_capacity_table(void)
 
 nomem:
 	ret = -ENOMEM;
+fail:
 	free_capacity_table();
 
 	return ret;
@@ -229,7 +255,9 @@ static int pd_capacity_tbl_open(struct inode *in, struct file *file)
 
 static const struct proc_ops pd_capacity_tbl_ops = {
 	.proc_open = pd_capacity_tbl_open,
-	.proc_read = seq_read
+	.proc_read = seq_read,
+	.proc_lseek = seq_lseek,
+	.proc_release = single_release,
 };
 
 int init_opp_cap_info(struct proc_dir_entry *dir)
@@ -251,14 +279,20 @@ int init_opp_cap_info(struct proc_dir_entry *dir)
 
 	entry = proc_create("pd_capacity_tbl", 0644, dir, &pd_capacity_tbl_ops);
 	if (!entry)
-		pr_info("mtk_scheduler/pd_capacity_tbl entry create failed\n");
+		return -ENOMEM;
 
 	return ret;
 }
 
 void clear_opp_cap_info(void)
 {
-	free_capacity_table();
+ /* Init failure only. Successful owner is permanent, no runtime free. */
+ free_capacity_table();
+ pd_count = 0;
+ if (sram_base_addr) {
+  iounmap(sram_base_addr);
+  sram_base_addr = NULL;
+ }
 }
 
 #if IS_ENABLED(CONFIG_NONLINEAR_FREQ_CTL)

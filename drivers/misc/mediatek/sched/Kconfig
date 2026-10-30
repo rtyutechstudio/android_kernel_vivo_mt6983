@@ -107,3 +107,14 @@ config MTK_CORE_CTL
 	  utilizations from scheduler information automatically.
 	  If you are not sure about whether to enable it or not,
 	  please set n.
+
+config VIVO_X80_RSC_FREQ_RULE
+ tristate "Vivo X80 native RSC frequency rule"
+ depends on VIVO_X80_RSC_BASE && MTK_CPUFREQ_SUGOV_EXT
+ depends on MTK_OPP_CAP_INFO && DRM_MEDIATEK
+ depends on ANDROID_VENDOR_HOOKS
+ default n
+ help
+   Native same-tree frequency rule and capacity hook consumer of genuine
+   RSC base and PD-capacity owners. Distinct from stock rsc_freq_rule.
+   No automatic loading is configured; successful publication is permanent.

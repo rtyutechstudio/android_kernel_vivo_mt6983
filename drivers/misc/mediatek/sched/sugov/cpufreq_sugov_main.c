@@ -1095,33 +1095,39 @@ struct cpufreq_governor mtk_gov = {
 
 static int __init cpufreq_mtk_init(void)
 {
-	int ret = 0;
-	struct proc_dir_entry *dir;
+ int ret;
+ struct proc_dir_entry *dir;
 
-	dir = proc_mkdir("mtk_scheduler", NULL);
-	if (!dir)
-		return -ENOMEM;
-
-	ret = init_opp_cap_info(dir);
-	if (ret)
-		return ret;
+ dir = proc_mkdir("mtk_scheduler", NULL);
+ if (!dir)
+  return -ENOMEM;
+ ret = init_opp_cap_info(dir);
+ if (ret)
+  goto clear_table;
 #if IS_ENABLED(CONFIG_NONLINEAR_FREQ_CTL)
-	ret = register_trace_android_vh_arch_set_freq_scale(
-			mtk_arch_set_freq_scale, NULL);
-	if (ret)
-		pr_info("register android_vh_arch_set_freq_scale failed\n");
+ /* Ordinary DECLARE_HOOK, not restricted: true synchronized rollback exists. */
+ ret = register_trace_android_vh_arch_set_freq_scale(mtk_arch_set_freq_scale, NULL);
+ if (ret)
+  goto clear_table;
 #endif
-
-	return cpufreq_register_governor(&mtk_gov);
+ ret = cpufreq_register_governor(&mtk_gov);
+ if (!ret)
+  return 0;
+#if IS_ENABLED(CONFIG_NONLINEAR_FREQ_CTL)
+ unregister_trace_android_vh_arch_set_freq_scale(mtk_arch_set_freq_scale, NULL);
+ tracepoint_synchronize_unregister();
+#endif
+clear_table:
+ /* proc_remove prevents proc readers from accessing freed capacity data. */
+ proc_remove(dir);
+ clear_opp_cap_info();
+ return ret;
 }
 
-static void __exit cpufreq_mtk_exit(void)
-{
-	clear_opp_cap_info();
-	cpufreq_unregister_governor(&mtk_gov);
-}
-
+/* No exit: published capacity API/proc callbacks and governor are boot-lifetime.
+ * Native scheduler/freqrule consumers hold actual symbol dependencies as well.
+ * Forced module unload is unsupported, not an ABI or lifetime guarantee.
+ */
 module_init(cpufreq_mtk_init);
-module_exit(cpufreq_mtk_exit);
 
 MODULE_LICENSE("GPL");
