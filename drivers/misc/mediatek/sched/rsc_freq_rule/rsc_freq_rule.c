@@ -4,6 +4,8 @@
 #include <linux/cpufreq.h>
 #include <linux/cpumask.h>
 #include <linux/hrtimer.h>
+#include <linux/ktime.h>
+#include <linux/atomic.h>
 #include <linux/tick.h>
 #include <linux/workqueue.h>
 #include <linux/mutex.h>
@@ -140,20 +142,40 @@ out:
 	return chosen;
 }
 
-/* Stock capacity hook computes its own OPP state. It does NOT consume decision_capacity. */
-static void capacity_hook(void *unused, int cpu, unsigned long *capacity)
+/* Observation only: source0=capacity callback; source1=tick after rq store.
+ * A target CPU can be queried from several execution CPUs, hence cmpxchg rather
+ * than an unsynchronized per-CPU timestamp. Clock/atomic work only while enabled.
+ */
+static atomic64_t capacity_sample_ns[2][PLATFORM_CPUS];
+static bool capacity_sample_due(unsigned int source, int cpu)
+{
+	u64 now, prev;
+	if (!trace_capacity_apply_enabled() || cpu < 0 || cpu >= PLATFORM_CPUS)
+		return false;
+	now = ktime_get_mono_fast_ns();
+	prev = atomic64_read(&capacity_sample_ns[source][cpu]);
+	if (prev && now - prev < 20 * NSEC_PER_MSEC)
+		return false;
+	return atomic64_cmpxchg(&capacity_sample_ns[source][cpu], prev, now) == prev;
+}
+
+/* Stock arithmetic unchanged. A sample contains values actually used, not re-reads.
+ * No allocation, rq lock acquisition, printk, or policy lookup is added here.
+ */
+static bool capacity_apply(int cpu, unsigned long *capacity,
+			   struct rsc_capacity_sample *sample)
 {
 	struct rsc_base_snapshot l, m;
 	struct rule_config *cfg;
 	struct rq *rq;
 	unsigned int mi, li, min_state;
-	unsigned long cap, irq, other, available;
+	unsigned long cap, irq, rt, dl, thermal, other, available, cap_in;
 	if (READ_ONCE(disabled) || !smp_load_acquire(&initialized) ||
 	    !cpumask_test_cpu(cpu, &little_mask) || !live_snapshot(&l, &m))
-		return;
+		return false;
 	mi = freq_state(mid_freq, mid_count, m.cur);
 	if (mi >= mid_count)
-		return;
+		return false;
 	rcu_read_lock();
 	cfg = rcu_dereference(rules);
 	li = cfg ? cfg->map[mi] : STATES;
@@ -163,24 +185,58 @@ static void capacity_hook(void *unused, int cpu, unsigned long *capacity)
 	if ((m.min >> 8) > 0xc34)
 		li = max(li, 20U);
 	if (li >= little_count)
-		return;
+		return false;
 	cap = little_cap[li];
 	rq = cpu_rq(cpu);
 	irq = READ_ONCE(rq->avg_irq.util_avg);
-	other = READ_ONCE(rq->avg_rt.util_avg) + READ_ONCE(rq->avg_dl.util_avg) +
-		READ_ONCE(rq->avg_thermal.load_avg);
+	rt = READ_ONCE(rq->avg_rt.util_avg);
+	dl = READ_ONCE(rq->avg_dl.util_avg);
+	thermal = READ_ONCE(rq->avg_thermal.load_avg);
+	other = rt + dl + thermal;
 	if (cap <= irq || cap <= other)
 		available = 1;
 	else
 		available = (cap - irq) * (cap - other) / cap;
-	*capacity = min(*capacity, available);
+	cap_in = *capacity;
+	*capacity = min(cap_in, available);
+	if (sample) {
+		sample->cpu = cpu;
+		sample->mid_state = mi;
+		sample->little_state = li;
+		sample->cap_in = cap_in;
+		sample->cap_opp = cap;
+		sample->irq = irq;
+		sample->rt = rt;
+		sample->dl = dl;
+		sample->thermal = thermal;
+		sample->available = available;
+		sample->cap_out = *capacity;
+	}
+	return true;
+}
+static void capacity_hook(void *unused, int cpu, unsigned long *capacity)
+{
+	struct rsc_capacity_sample sample;
+	bool observe = capacity_sample_due(0, cpu);
+	if (capacity_apply(cpu, capacity, observe ? &sample : NULL) && observe) {
+		sample.source = 0;
+		sample.rq_capacity = READ_ONCE(cpu_rq(cpu)->cpu_capacity);
+		trace_capacity_apply(&sample);
+	}
 }
 static void tick_hook(void *unused, struct rq *rq)
 {
-	/* Important: stock starts with CURRENT capacity, not cpu_capacity_orig. */
+	struct rsc_capacity_sample sample;
 	unsigned long cap = rq->cpu_capacity;
-	capacity_hook(NULL, cpu_of(rq), &cap);
+	bool observe = capacity_sample_due(1, cpu_of(rq));
+	bool applied = capacity_apply(cpu_of(rq), &cap, observe ? &sample : NULL);
+	/* Exact same tick assignment as before; trace observes AFTER this store. */
 	rq->cpu_capacity = cap;
+	if (applied && observe) {
+		sample.source = 1;
+		sample.rq_capacity = READ_ONCE(rq->cpu_capacity);
+		trace_capacity_apply(&sample);
+	}
 }
 static void sugov_hook(void *unused, unsigned int *next, unsigned int cpu)
 {
