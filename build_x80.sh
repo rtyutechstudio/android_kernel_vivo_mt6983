@@ -6,6 +6,7 @@ ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 JOBS=${JOBS:-8}
 LTO_JOBS=${LTO_JOBS:-1}
 [[ $JOBS =~ ^[1-9][0-9]*$ && $LTO_JOBS =~ ^[1-9][0-9]*$ ]] || exit 2
+(( JOBS <= 10 && LTO_JOBS <= 10 )) || { echo "Maximum parallelism is 10" >&2; exit 2; }
 export PATH="$CLANG_DIR/bin:$PATH"
 cd "$ROOT"
 clang --version
@@ -16,7 +17,11 @@ args=(ARCH=arm64 LLVM=1 LLVM_IAS=1 CROSS_COMPILE=aarch64-linux-gnu-
 if [[ ! -f .config ]]; then
  make "${args[@]}" vivo_x80_os5_defconfig
 fi
-make "${args[@]}" -j"$JOBS" mm/vivo_x80_compat.o mm/page_pinner.o block/blk-core.o
-bash scripts/x80_pin_vendor_crc.sh "$ROOT"
+make "${args[@]}" olddefconfig
+grep -q "^# CONFIG_VIVO_X80_COMPAT is not set$" .config || {
+ echo "Refusing obsolete compatibility-stub configuration" >&2; exit 2; }
+for feature in CFI_CLANG LTO_CLANG_THIN SECURITY_SELINUX; do
+ grep -q "^CONFIG_${feature}=y$" .config || exit 2
+done
 make "${args[@]}" -j"$JOBS" Image.gz
 sha256sum arch/arm64/boot/Image arch/arm64/boot/Image.gz

@@ -14,6 +14,7 @@ ccflags-y += \
         -I$(srctree)/include/ \
         -I$(srctree)/drivers/gpu/drm/mediatek/mediatek_v2/ \
         -I$(srctree)/drivers/gpu/mediatek/ged/include/ \
+        -I$(FPSGO_TOP)/ \
         -I$(FPSGO_TOP)/mt-plat/ \
         -I$(BASE_TOP)/include/ \
         -I$(FBT_TOP)/include/ \
@@ -28,6 +29,7 @@ subdir-ccflags-y += \
         -I$(srctree)/include/ \
         -I$(srctree)/drivers/gpu/drm/mediatek/mediatek_v2/ \
         -I$(srctree)/drivers/gpu/mediatek/ged/include/ \
+        -I$(FPSGO_TOP)/ \
         -I$(FPSGO_TOP)/mt-plat/ \
         -I$(BASE_TOP)/include/ \
         -I$(FBT_TOP)/include/ \

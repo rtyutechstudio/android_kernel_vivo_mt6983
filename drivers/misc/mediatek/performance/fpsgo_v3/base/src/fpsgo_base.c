@@ -872,6 +872,23 @@ int fpsgo_uboost_traverse(unsigned long long ts)
 	return result;
 }
 
+int fpsgo_sbe_rescue_traverse(int pid, int start, int enhance)
+{
+	struct rb_node *n;
+	struct render_info *iter;
+
+	fpsgo_render_tree_lock(__func__);
+	for (n = rb_first(&render_pid_tree); n; n = rb_next(n)) {
+		iter = rb_entry(n, struct render_info, render_key_node);
+		fpsgo_thread_lock(&iter->thr_mlock);
+		if (iter->pid == pid)
+			fpsgo_sbe2fbt_rescue(iter, start, enhance);
+		fpsgo_thread_unlock(&iter->thr_mlock);
+	}
+	fpsgo_render_tree_unlock(__func__);
+	return 0;
+}
+
 int fpsgo_update_swap_buffer(int pid)
 {
 	fpsgo_render_tree_lock(__func__);

@@ -40,6 +40,7 @@ enum FPSGO_NOTIFIER_PUSH_TYPE {
 	FPSGO_NOTIFIER_BQID				= 0x04,
 	FPSGO_NOTIFIER_VSYNC				= 0x05,
 	FPSGO_NOTIFIER_SWAP_BUFFER          = 0x06,
+	FPSGO_NOTIFIER_SBE_RESCUE           = 0x07,
 };
 
 /* TODO: use union*/
@@ -61,6 +62,7 @@ struct FPSGO_NOTIFIER_PUSH_TAG {
 	int create;
 
 	int dfrc_fps;
+	int enhance;
 
 	struct list_head queue_list;
 };
@@ -277,6 +279,11 @@ static void fpsgo_notifier_wq_cb(void)
 	case FPSGO_NOTIFIER_SWAP_BUFFER:
 		fpsgo_notifier_wq_cb_swap_buffer(vpPush->pid);
 		break;
+	case FPSGO_NOTIFIER_SBE_RESCUE:
+		if (fpsgo_is_enable())
+			fpsgo_sbe_rescue_traverse(vpPush->pid,
+				vpPush->enable, vpPush->enhance);
+		break;
 	default:
 		FPSGO_LOGE("[FPSGO_CTRL] unhandled push type = %d\n",
 				vpPush->ePushType);
@@ -307,6 +314,27 @@ static int kfpsgo(void *arg)
 
 	return 0;
 }
+/* Serialize SBE with frame/VSYNC events on the existing FIFO. */
+static void fpsgo_notify_sbe_rescue(int pid, int start, int enhance)
+{
+	struct FPSGO_NOTIFIER_PUSH_TAG *push;
+
+	if (!fpsgo_is_enable())
+		return;
+	push = fpsgo_alloc_atomic(sizeof(*push));
+	if (!push)
+		return;
+	if (!kfpsgo_tsk) {
+		fpsgo_free(push, sizeof(*push));
+		return;
+	}
+	push->ePushType = FPSGO_NOTIFIER_SBE_RESCUE;
+	push->pid = pid;
+	push->enable = start;
+	push->enhance = enhance;
+	fpsgo_queue_work(push);
+}
+
 void fpsgo_notify_qudeq(int qudeq,
 		unsigned int startend,
 		int pid, unsigned long long id)
@@ -735,26 +763,6 @@ void tracepoint_cleanup(void)
 }
 
 
-static void __exit fpsgo_exit(void)
-{
-	fpsgo_notifier_wq_cb_enable(0);
-
-	if (kfpsgo_tsk)
-		kthread_stop(kfpsgo_tsk);
-
-#if IS_ENABLED(CONFIG_DRM_MEDIATEK)
-	drm_unregister_fps_chg_callback(dfrc_fps_limit_cb);
-#endif
-	fpsgo_uboost_exit();
-	fbt_cpu_exit();
-	mtk_fstb_exit();
-	fpsgo_composer_exit();
-	fpsgo_sysfs_exit();
-
-	/* game boost engine */
-	exit_gbe_common();
-}
-
 static int __init fpsgo_init(void)
 {
 	int i;
@@ -762,23 +770,18 @@ static int __init fpsgo_init(void)
 
 	FPSGO_LOGI("[FPSGO_CTRL] init\n");
 
-	fpsgo_cpu_policy_init();
-
-	fpsgo_sysfs_init();
-
-
 	kfpsgo_tsk = kthread_create(kfpsgo, NULL, "kfps");
-	if (kfpsgo_tsk == NULL)
-		return -EFAULT;
-	wake_up_process(kfpsgo_tsk);
+	if (IS_ERR(kfpsgo_tsk))
+		return PTR_ERR(kfpsgo_tsk);
 
 	for_each_kernel_tracepoint(lookup_tracepoints, NULL);
 
 	FOR_EACH_INTEREST(i) {
 		if (fpsgo_tracepoints[i].tp == NULL) {
 			FPSGO_LOGE("FPSGO Error, %s not found\n", fpsgo_tracepoints[i].name);
-			tracepoint_cleanup();
-			return -1;
+			kthread_stop(kfpsgo_tsk);
+			kfpsgo_tsk = NULL;
+			return -ENOENT;
 		}
 	}
 	ret = tracepoint_probe_register(fpsgo_tracepoints[0].tp, fpsgo_tracepoints[0].func,  NULL);
@@ -790,6 +793,8 @@ static int __init fpsgo_init(void)
 
 fail_reg_cpu_frequency_entry:
 
+	fpsgo_cpu_policy_init();
+	fpsgo_sysfs_init();
 
 	mutex_init(&notify_lock);
 
@@ -805,6 +810,8 @@ fail_reg_cpu_frequency_entry:
 	/* game boost engine*/
 	init_gbe_common();
 
+	wake_up_process(kfpsgo_tsk);
+
 	if (fpsgo_arch_nr_clusters() > 0)
 		fpsgo_switch_enable(1);
 
@@ -815,6 +822,7 @@ fail_reg_cpu_frequency_entry:
 	fpsgo_notify_bqid_fp = fpsgo_notify_bqid;
 
 	fpsgo_notify_swap_buffer_fp = fpsgo_notify_swap_buffer;
+	fpsgo_notify_sbe_rescue_fp = fpsgo_notify_sbe_rescue;
 	fpsgo_get_fps_fp = fpsgo_get_fps;
 	fpsgo_get_cmd_fp = fpsgo_get_cmd;
 	fpsgo_get_fstb_active_fp = fpsgo_get_fstb_active;
@@ -828,7 +836,7 @@ fail_reg_cpu_frequency_entry:
 }
 
 module_init(fpsgo_init);
-module_exit(fpsgo_exit);
+/* Cross-module callbacks and published trace/sysfs ops require reboot lifetime. */
 
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("MediaTek FPSGO");

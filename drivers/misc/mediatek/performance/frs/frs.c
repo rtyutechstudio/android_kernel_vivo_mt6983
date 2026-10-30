@@ -123,7 +123,7 @@ int eara_nl_send_to_user(void *buf, int size)
 	struct sk_buff *skb;
 	struct nlmsghdr *nlh;
 
-	int len = NLMSG_SPACE(size);
+	int len = NLMSG_SPACE(size + 1);
 	void *data;
 	int ret;
 
@@ -133,9 +133,15 @@ int eara_nl_send_to_user(void *buf, int size)
 	skb = alloc_skb(len, GFP_ATOMIC);
 	if (!skb)
 		return -1;
-	nlh = nlmsg_put(skb, 0, 0, NLMSG_DONE, size+1, 0);
+	nlh = nlmsg_put(skb, 0, 0, NLMSG_DONE, size + 1, 0);
+	if (!nlh) {
+		kfree_skb(skb);
+		return -EMSGSIZE;
+	}
 	data = NLMSG_DATA(nlh);
 	memcpy(data, buf, size);
+	/* Preserve the existing size+1 wire ABI without leaking a byte. */
+	((u8 *)data)[size] = 0;
 	NETLINK_CB(skb).portid = 0; /* from kernel */
 	NETLINK_CB(skb).dst_group = 0; /* unicast */
 
@@ -153,34 +159,32 @@ int eara_nl_send_to_user(void *buf, int size)
 
 static void eara_nl_data_handler(struct sk_buff *skb)
 {
-	u32 pid;
-	kuid_t uid;
-	int seq;
-	void *data;
 	struct nlmsghdr *nlh;
-	struct _EARA_THRM_PACKAGE *change_msg;
-	struct _EARA_THRM_ENABLE *enable_msg;
-	//int size = 0;
+	struct _EARA_THRM_PACKAGE change_msg;
+	struct _EARA_THRM_ENABLE enable_msg;
+	__s32 type;
 
+	/* Validate before reading either the header or a fixed-size payload. */
+	if (skb->len < NLMSG_HDRLEN)
+		return;
 	nlh = (struct nlmsghdr *)skb->data;
-	pid = NETLINK_CREDS(skb)->pid;
-	uid = NETLINK_CREDS(skb)->uid;
-	seq = nlh->nlmsg_seq;
-
-	/*tsta_dprintk(
-	 *"[ta_nl_data_handler] recv skb from user space uid:%d pid:%d seq:%d\n"
-	 * ,uid, pid, seq);
-	 */
-	data = NLMSG_DATA(nlh);
-	change_msg = (struct _EARA_THRM_PACKAGE *) NLMSG_DATA(nlh);
-	enable_msg = (struct _EARA_THRM_ENABLE *) NLMSG_DATA(nlh);
-	if (change_msg->type == 0)
-		set_tfps_diff(EARA_MAX_COUNT, change_msg->pair_pid,
-			change_msg->pair_bufid, change_msg->pair_tfps, change_msg->pair_diff);
-	else
-		switch_eara(enable_msg->enable, enable_msg->pid);
+	if (!nlmsg_ok(nlh, skb->len) || nlmsg_len(nlh) < sizeof(type))
+		return;
+	memcpy(&type, nlmsg_data(nlh), sizeof(type));
+	if (type == 0) {
+		if (nlmsg_len(nlh) < sizeof(change_msg))
+			return;
+		/* Copy also avoids unaligned u64 accesses in the wire payload. */
+		memcpy(&change_msg, nlmsg_data(nlh), sizeof(change_msg));
+		set_tfps_diff(EARA_MAX_COUNT, change_msg.pair_pid,
+			change_msg.pair_bufid, change_msg.pair_tfps, change_msg.pair_diff);
+	} else {
+		if (nlmsg_len(nlh) < sizeof(enable_msg))
+			return;
+		memcpy(&enable_msg, nlmsg_data(nlh), sizeof(enable_msg));
+		switch_eara(enable_msg.enable, enable_msg.pid);
+	}
 }
-
 
 int eara_netlink_init(void)
 {
@@ -221,29 +225,28 @@ static struct attribute_group thermal_attr_group = {
 	.attrs	= thermal_attrs,
 };
 
-void __exit eara_thrm_pre_exit(void)
-{
-	eara_pre_change_fp = NULL;
-	eara_pre_change_single_fp = NULL;
-}
-
 int __init eara_thrm_pre_init(void)
 {
 	int ret;
-	eara_pre_change_fp = pre_change_event;
-	eara_pre_change_single_fp =  pre_change_single_event;
-	eara_netlink_init();
 
+	ret = eara_netlink_init();
+	if (ret)
+		return ret;
 	ret = sysfs_merge_group(kernel_kobj, &thermal_attr_group);
 	if (ret) {
-		pr_info(TAG, "failed to create thermal sysfs, ret=%d!\n", ret);
+		pr_info(TAG "failed to create thermal sysfs, ret=%d!\n", ret);
+		netlink_kernel_release(frs_nl_sk);
+		frs_nl_sk = NULL;
 		return ret;
 	}
+	/* Publish only after every fallible preparation step has succeeded. */
+	eara_pre_change_fp = pre_change_event;
+	eara_pre_change_single_fp = pre_change_single_event;
 	return 0;
 }
 
+/* FPSGO callbacks have no synchronized detach protocol: reboot-only lifetime. */
 module_init(eara_thrm_pre_init);
-module_exit(eara_thrm_pre_exit);
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("MediaTek Frame Rate Smoother");
 MODULE_AUTHOR("MediaTek Inc.");

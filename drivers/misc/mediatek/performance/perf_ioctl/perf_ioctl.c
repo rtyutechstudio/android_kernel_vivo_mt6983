@@ -3,6 +3,12 @@
  * Copyright (c) 2019 MediaTek Inc.
  */
 #include "perf_ioctl.h"
+#if IS_ENABLED(CONFIG_VIVO_X80_RSC_BASE)
+#include <linux/vivo_x80_rsc_base.h>
+#endif
+
+/* The sole thermal request path serializes action and successful commit. */
+static DEFINE_MUTEX(rsc_thermal_ioctl_lock);
 
 
 #define TAG "PERF_IOCTL"
@@ -39,6 +45,8 @@ void (*fpsgo_get_nn_ttime_fp)(unsigned int pid, unsigned long long mid,
 	int num_step, __u64 *ttime);
 void (*fpsgo_notify_swap_buffer_fp)(int pid);
 EXPORT_SYMBOL_GPL(fpsgo_notify_swap_buffer_fp);
+void (*fpsgo_notify_sbe_rescue_fp)(int pid, int start, int enhance);
+EXPORT_SYMBOL_GPL(fpsgo_notify_sbe_rescue_fp);
 
 void (*rsu_getusage_fp)(__s32 *devusage, __u32 *bwusage, __u32 pid);
 void (*rsu_getstate_fp)(int *throttled);
@@ -376,21 +384,30 @@ static long eas_ioctl_impl(struct file *filp,
 		break;
 #endif
 	case CORE_CTL_FORCE_PAUSE_CPU:
-		if (perfctl_copy_from_user(&msgKM, ubuf, sizeof(struct _CORE_CTL_PACKAGE)))
-			return -1;
-
-		bval = !!msgKM.is_pause;
-#if IS_ENABLED(CONFIG_MTK_CORE_CTL)
-		ret = core_ctl_force_pause_cpu(msgKM.cpu, bval);
-#elif IS_ENABLED(CONFIG_MTK_CORE_PAUSE)
-		if (bval)
-			ret = sched_pause_cpu(msgKM.cpu);
-		else
-			ret = sched_resume_cpu(msgKM.cpu);
-#else
+	if (perfctl_copy_from_user(&msgKM, ubuf, sizeof(struct _CORE_CTL_PACKAGE)))
 		return -1;
+	/* Handles signed negative CPU as well, via unsigned conversion. */
+	if ((unsigned int)msgKM.cpu >= nr_cpu_ids || !cpu_possible(msgKM.cpu))
+		return -EINVAL;
+	bval = !!msgKM.is_pause;
+	mutex_lock(&rsc_thermal_ioctl_lock);
+#if IS_ENABLED(CONFIG_MTK_CORE_CTL)
+	ret = core_ctl_force_pause_cpu(msgKM.cpu, bval);
+#elif IS_ENABLED(CONFIG_MTK_CORE_PAUSE)
+	ret = bval ? sched_pause_cpu(msgKM.cpu) : sched_resume_cpu(msgKM.cpu);
+#else
+	ret = -EOPNOTSUPP;
 #endif
-		break;
+#if IS_ENABLED(CONFIG_VIVO_X80_RSC_BASE)
+	/* No ready gate here: a real thermal request remains valid independently
+	 * of whether all three frequency policies currently exist.
+	 * CPU already checked BEFORE action: commit cannot introduce a new error.
+	 */
+	if (!ret)
+		rsc_base_thermal_commit(msgKM.cpu, bval);
+#endif
+	mutex_unlock(&rsc_thermal_ioctl_lock);
+	break;
 #if IS_ENABLED(CONFIG_MTK_CORE_CTL)
 	case CORE_CTL_SET_OFFLINE_THROTTLE_MS:
 		if (perfctl_copy_from_user(&msgKM, ubuf, sizeof(struct _CORE_CTL_PACKAGE)))
@@ -696,6 +713,14 @@ static long device_ioctl(struct file *filp,
 		if (fpsgo_notify_swap_buffer_fp)
 			fpsgo_notify_swap_buffer_fp(msgKM->tid);
 		break;
+	case FPSGO_SBE_RESCUE:
+		/* Stock 40-byte ABI: signed arguments at +0, +4, +24. */
+		BUILD_BUG_ON(sizeof(struct _FPSGO_PACKAGE) != 40);
+		BUILD_BUG_ON(offsetof(struct _FPSGO_PACKAGE, value2) != 24);
+		if (fpsgo_notify_sbe_rescue_fp)
+			fpsgo_notify_sbe_rescue_fp((int)msgKM->tid,
+				(int)msgKM->start, msgKM->value2);
+		break;
 	case FPSGO_GET_FPS:
 		if (fpsgo_get_fps_fp) {
 			fpsgo_get_fps_fp(&pwr_pid, &pwr_fps);
@@ -765,6 +790,8 @@ static long device_ioctl(struct file *filp,
 		 [[fallthrough]];
 	case FPSGO_GET_FSTB_ACTIVE:
 		[[fallthrough]];
+	case FPSGO_SBE_RESCUE:
+		[[fallthrough]];
 	case FPSGO_WAIT_FSTB_ACTIVE:
 		break;
 #endif
@@ -790,7 +817,6 @@ static const struct proc_ops Fops = {
 };
 
 /*--------------------INIT------------------------*/
-static void __exit exit_perfctl(void) {}
 //static int __init init_perfctl(struct proc_dir_entry *parent)
 static int __init init_perfctl(void)
 {
@@ -801,6 +827,8 @@ static int __init init_perfctl(void)
 	pr_debug(TAG"Start to init perf_ioctl driver\n");
 
 	parent = proc_mkdir("perfmgr", NULL);
+	if (!parent)
+		return -ENOMEM;
 	perfmgr_root = parent;
 
 	pe = proc_create("perf_ioctl", 0664, parent, &Fops);
@@ -844,11 +872,13 @@ static int __init init_perfctl(void)
 	return 0;
 
 out_wq:
+	proc_remove(parent);
+	perfmgr_root = NULL;
 	return ret_val;
 }
 
 module_init(init_perfctl);
-module_exit(exit_perfctl);
+/* Published proc ops and cross-module callbacks are reboot-lifetime. */
 
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("MediaTek FPSGO perf_ioctl");

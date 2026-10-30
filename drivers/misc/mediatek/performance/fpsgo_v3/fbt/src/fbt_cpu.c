@@ -171,6 +171,7 @@ enum FPSGO_JERK_STAGE {
 	FPSGO_JERK_INACTIVE = 0,
 	FPSGO_JERK_FIRST,
 	FPSGO_JERK_UBOOST,
+	FPSGO_JERK_SBE,
 	FPSGO_JERK_SECOND,
 };
 
@@ -1619,7 +1620,8 @@ static unsigned int fbt_enhance_floor(unsigned int blc_wt, int level, int enh)
 	tgt_opp = max((int)(tgt_opp - level), 0);
 	blc_wt1 = cpu_dvfs[cluster].capacity_ratio[tgt_opp];
 
-	blc_wt2 = blc_wt + enh;
+	/* Stock ARM64 add w8 wraps at 32 bits before signed clamp. */
+	blc_wt2 = (int)((unsigned int)blc_wt + (unsigned int)enh);
 	blc_wt2 = clamp(blc_wt2, 1, 100);
 
 	blc_wt = max(blc_wt1, blc_wt2);
@@ -3296,6 +3298,18 @@ static int fbt_boost_policy(
 
 	}
 
+	/* Preserve the normal capacity for explicit SBE stop restoration. */
+	boost_info->last_normal_blc = blc_wt;
+	if (boost_info->sbe_rescue) {
+		if (boost_info->keep_enhance)
+			blc_wt = clamp(blc_wt + (unsigned int)boost_info->keep_enhance,
+				1U, 100U);
+	} else if (boost_info->keep_enhance) {
+		boost_info->keep_enhance = 0;
+		if (!boost_ta)
+			fbt_set_min_cap_locked(thread_info, blc_wt, FPSGO_JERK_INACTIVE);
+	}
+
 	fbt_set_limit(blc_wt, pid, buffer_id,
 		thread_info->dep_valid_size, thread_info->dep_arr, thread_info, t_cpu_cur);
 
@@ -3306,6 +3320,7 @@ static int fbt_boost_policy(
 	boost_info->target_time = target_time;
 	boost_info->last_blc = blc_wt;
 	boost_info->cur_stage = FPSGO_JERK_INACTIVE;
+	boost_info->uboost_rescue = 0;
 	mutex_unlock(&fbt_mlock);
 
 	mutex_lock(&blc_mlock);
@@ -3859,6 +3874,10 @@ static void fbt_reset_boost(struct render_info *thr)
 	boost = &(thr->boost_info);
 
 	boost->last_blc = 0;
+	boost->last_normal_blc = 0;
+	boost->sbe_rescue = 0;
+	boost->uboost_rescue = 0;
+	boost->keep_enhance = 0;
 	boost->target_time = 0;
 	boost->target_fps = -1;
 
@@ -4214,6 +4233,10 @@ void fpsgo_base2fbt_node_init(struct render_info *obj)
 		return;
 
 	boost = &(obj->boost_info);
+	boost->last_normal_blc = 0;
+	boost->sbe_rescue = 0;
+	boost->uboost_rescue = 0;
+	boost->keep_enhance = 0;
 	for (i = 0; i < RESCUE_TIMER_NUM; i++)
 		fbt_init_jerk(&(boost->proc.jerks[i]), i);
 
@@ -4260,8 +4283,13 @@ void fpsgo_base2fbt_item_del(struct fbt_thread_loading *obj,
 	mutex_lock(&fbt_mlock);
 	if (!boost_ta)
 		fbt_set_min_cap_locked(thr, 0, FPSGO_JERK_INACTIVE);
-	if (thr)
+	if (thr) {
 		thr->boost_info.last_blc = 0;
+		thr->boost_info.last_normal_blc = 0;
+		thr->boost_info.sbe_rescue = 0;
+		thr->boost_info.uboost_rescue = 0;
+		thr->boost_info.keep_enhance = 0;
+	}
 	mutex_unlock(&fbt_mlock);
 
 	fbt_clear_dep_list(pdep);
@@ -4401,6 +4429,84 @@ void fpsgo_base2fbt_cancel_jerk(struct render_info *thr)
 	}
 }
 
+/* Called with render tree and thr_mlock held, like the UBOOST path. */
+void fpsgo_sbe2fbt_rescue(struct render_info *thr, int start, int enhance)
+{
+	struct cpu_ctrl_data *pld;
+	struct fbt_thread_blc *pos;
+	struct fbt_boost_info *boost;
+	unsigned int blc_wt, normal_max = 0;
+	int headroom;
+
+	if (!thr)
+		return;
+	pld = kcalloc(cluster_num, sizeof(*pld), GFP_KERNEL);
+	if (!pld)
+		return;
+	mutex_lock(&fbt_mlock);
+	boost = &thr->boost_info;
+	if (start) {
+		if (boost->sbe_rescue)
+			goto out;
+		if (boost->uboost_rescue) {
+			boost->sbe_rescue = 1;
+			goto trace;
+		}
+		if (!boost->last_blc)
+			goto out;
+		if (enhance < 0)
+			enhance = rescue_enhance_f;
+		headroom = rescue_opp_c;
+		if (boost->cur_stage == FPSGO_JERK_SECOND)
+			headroom = rescue_second_copp ? NR_FREQ_CPU - 1 : 0;
+		blc_wt = fbt_get_new_base_blc(pld, boost->last_blc, enhance, headroom);
+		if (!blc_wt)
+			goto out;
+		boost->sbe_rescue = 1;
+		boost->keep_enhance = enhance;
+		if (boost->cur_stage != FPSGO_JERK_SECOND) {
+			blc_wt = fbt_limit_capacity(blc_wt, 1);
+			fbt_set_hard_limit_locked(FPSGO_HARD_CEILING, pld);
+			boost->cur_stage = FPSGO_JERK_SBE;
+			if (thr->pid == max_blc_pid && thr->buffer_id == max_blc_buffer_id)
+				max_blc_stage = FPSGO_JERK_SBE;
+		}
+		fbt_set_ceiling(pld, thr->pid, thr->buffer_id);
+		if (boost_ta) {
+			fbt_set_boost_value(blc_wt);
+			max_blc_cur = blc_wt;
+		} else
+			/* Stock uses first-rescue headroom, not SBE's stage number. */
+			fbt_set_min_cap_locked(thr, blc_wt, FPSGO_JERK_FIRST);
+		boost->last_blc = blc_wt;
+	} else {
+		if (!boost->sbe_rescue)
+			goto out;
+		boost->sbe_rescue = 0;
+		boost->keep_enhance = 0;
+		blc_wt = boost->last_normal_blc;
+		if (!blc_wt)
+			goto trace;
+		mutex_lock(&blc_mlock);
+		list_for_each_entry(pos, &blc_list, entry)
+			normal_max = max(normal_max, pos->blc);
+		mutex_unlock(&blc_mlock);
+		fbt_get_new_base_blc(pld, normal_max, 0, bhr_opp);
+		fbt_set_ceiling(pld, thr->pid, thr->buffer_id);
+		if (boost_ta) {
+			fbt_set_boost_value(blc_wt);
+			max_blc_cur = blc_wt;
+		} else
+			fbt_set_min_cap_locked(thr, blc_wt, FPSGO_JERK_INACTIVE);
+		/* Stock deliberately retains last_blc, cur_stage and hard limit. */
+	}
+trace:
+	fpsgo_systrace_c_fbt(thr->pid, thr->buffer_id, boost->sbe_rescue, "sbe_rescue");
+out:
+	mutex_unlock(&fbt_mlock);
+	kfree(pld);
+}
+
 void fpsgo_uboost2fbt_uboost(struct render_info *thr)
 {
 	int floor, blc_wt = 0;
@@ -4415,6 +4521,9 @@ void fpsgo_uboost2fbt_uboost(struct render_info *thr)
 		return;
 
 	mutex_lock(&fbt_mlock);
+
+	if (thr->boost_info.sbe_rescue)
+		goto leave;
 
 	floor = thr->boost_info.last_blc;
 	if (!floor)
@@ -4450,7 +4559,8 @@ void fpsgo_uboost2fbt_uboost(struct render_info *thr)
 		fbt_set_min_cap_locked(thr, blc_wt, FPSGO_JERK_UBOOST);
 
 	thr->boost_info.last_blc = blc_wt;
-
+	thr->boost_info.uboost_rescue = 1;
+	thr->boost_info.keep_enhance = uboost_enhance_f;
 
 leave:
 	mutex_unlock(&fbt_mlock);

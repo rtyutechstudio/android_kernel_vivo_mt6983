@@ -22,6 +22,15 @@
 #include "eas_plus.h"
 #include "eas_trace.h"
 
+/*
+ * X80 stock rotation stores its timestamp at task+2880.  Slot 3 in this
+ * tree is task+2856, owned by the shipped task_turbo packed nice/flags.
+ * Keep all timestamp readers/writers on the measured stock location.
+ */
+#define X80_ROTATION_VENDOR_SLOT 6
+static_assert(offsetof(struct task_struct,
+	android_vendor_data1[X80_ROTATION_VENDOR_SLOT]) == 2880);
+
 DEFINE_PER_CPU(struct task_rotate_work, task_rotate_works);
 bool big_task_rotation_enable = true;
 int sched_min_cap_orig_cpu = -1;
@@ -176,7 +185,7 @@ void task_check_for_rotation(struct rq *src_rq)
 		if (is_reserved(i))
 			continue;
 
-		wait = wc - rq->curr->android_vendor_data1[3];
+		wait = wc - rq->curr->android_vendor_data1[X80_ROTATION_VENDOR_SLOT];
 
 		if (wait > max_wait) {
 			max_wait = wait;
@@ -202,7 +211,7 @@ void task_check_for_rotation(struct rq *src_rq)
 		if (is_reserved(i))
 			continue;
 
-		run = wc - rq->curr->android_vendor_data1[3];
+		run = wc - rq->curr->android_vendor_data1[X80_ROTATION_VENDOR_SLOT];
 
 		if (run < TASK_ROTATION_THRESHOLD_NS)
 			continue;
@@ -264,17 +273,17 @@ EXPORT_SYMBOL_GPL(set_big_task_rotation);
 void rotat_after_enqueue_task(void __always_unused *data, struct rq *rq,
 				struct task_struct *p)
 {
-	p->android_vendor_data1[3] = ktime_get_raw_ns();
+	p->android_vendor_data1[X80_ROTATION_VENDOR_SLOT] = ktime_get_raw_ns();
 }
 
 void rotat_task_stats(void __always_unused *data,
 				struct task_struct *p)
 {
-	p->android_vendor_data1[3] = ktime_get_raw_ns();
+	p->android_vendor_data1[X80_ROTATION_VENDOR_SLOT] = ktime_get_raw_ns();
 }
 
 void rotat_task_newtask(void __always_unused *data,
 				struct task_struct *p, unsigned long clone_flags)
 {
-	p->android_vendor_data1[3] = 0;
+	p->android_vendor_data1[X80_ROTATION_VENDOR_SLOT] = 0;
 }

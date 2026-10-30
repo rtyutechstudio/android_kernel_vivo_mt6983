@@ -19,6 +19,15 @@ config CPU_FREQ
 
 if CPU_FREQ
 
+config VIVO_X80_RSC_BASE
+ bool "Vivo X80 native RSC base owner"
+ depends on CPU_FREQ
+ default n
+ help
+   Maintain real cpufreq lifecycle snapshots and a thermal-success mask.
+   This built-in base does not implement full private Vivo RSC policy or
+   certify closed-source consumers. Exposes /sys/rsc/ready and state.
+
 config CPU_FREQ_GOV_ATTR_SET
 	bool
 

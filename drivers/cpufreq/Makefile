@@ -2,6 +2,8 @@
 # CPUfreq core
 obj-$(CONFIG_CPU_FREQ)			+= cpufreq.o freq_table.o
 
+obj-$(CONFIG_VIVO_X80_RSC_BASE) += vivo_x80_rsc_base.o
+
 # CPUfreq stats
 obj-$(CONFIG_CPU_FREQ_STAT)             += cpufreq_stats.o
 

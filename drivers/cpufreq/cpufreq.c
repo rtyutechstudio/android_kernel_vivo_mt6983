@@ -16,6 +16,7 @@
 
 #include <linux/cpu.h>
 #include <linux/cpufreq.h>
+#include "rsc_base_core.h"
 #include <linux/cpufreq_times.h>
 #include <linux/cpu_cooling.h>
 #include <linux/delay.h>
@@ -391,6 +392,7 @@ static void cpufreq_notify_transition(struct cpufreq_policy *policy,
 		cpufreq_stats_record_transition(policy, freqs->new);
 		cpufreq_times_record_transition(policy, freqs->new);
 		policy->cur = freqs->new;
+		rsc_base_policy_update(policy, true);
 		trace_android_rvh_cpufreq_transition(policy);
 	}
 }
@@ -1308,6 +1310,7 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
 
 	/* Cancel any pending policy->update work before freeing the policy. */
 	cancel_work_sync(&policy->update);
+	rsc_base_policy_remove(policy);
 
 	if (policy->max_freq_req) {
 		/*
@@ -1513,6 +1516,7 @@ static int cpufreq_online(unsigned int cpu)
 		goto out_destroy_policy;
 	}
 
+	rsc_base_policy_ready(policy);
 	up_write(&policy->rwsem);
 
 	kobject_uevent(&policy->kobj, KOBJ_ADD);
@@ -1594,6 +1598,7 @@ static int cpufreq_offline(unsigned int cpu)
 	cpumask_clear_cpu(cpu, policy->cpus);
 
 	if (policy_is_inactive(policy)) {
+		rsc_base_policy_inactive(policy);
 		if (has_target())
 			strncpy(policy->last_governor, policy->governor->name,
 				CPUFREQ_NAME_LEN);
@@ -2108,6 +2113,7 @@ unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
 		return 0;
 
 	policy->cur = freq;
+	rsc_base_policy_update(policy, true);
 	arch_set_freq_scale(policy->related_cpus, freq,
 			    policy->cpuinfo.max_freq);
 	cpufreq_stats_record_transition(policy, freq);
@@ -2503,6 +2509,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 
 	policy->min = new_data.min;
 	policy->max = new_data.max;
+	rsc_base_policy_update(policy, false);
 	trace_cpu_frequency_limits(policy);
 
 	policy->cached_target_freq = UINT_MAX;
@@ -2870,12 +2877,16 @@ EXPORT_SYMBOL_GPL(cpufreq_unregister_driver);
 static int __init cpufreq_core_init(void)
 {
 	struct cpufreq_governor *gov = cpufreq_default_governor();
+	int ret;
 
 	if (cpufreq_disabled())
 		return -ENODEV;
 
 	cpufreq_global_kobject = kobject_create_and_add("cpufreq", &cpu_subsys.dev_root->kobj);
 	BUG_ON(!cpufreq_global_kobject);
+	ret = rsc_base_core_init();
+	if (ret)
+		pr_warn("RSC base unavailable: %d\n", ret);
 
 	if (!strlen(default_governor))
 		strncpy(default_governor, gov->name, CPUFREQ_NAME_LEN);

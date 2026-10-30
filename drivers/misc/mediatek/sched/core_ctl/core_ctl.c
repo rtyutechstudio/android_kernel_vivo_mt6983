@@ -587,7 +587,7 @@ int core_ctl_force_pause_cpu(unsigned int cpu, bool is_pause)
 	struct cpu_data *c;
 	struct cluster_data *cluster;
 
-	if (cpu > nr_cpu_ids)
+	if (cpu >= nr_cpu_ids || !cpu_possible(cpu))
 		return -EINVAL;
 
 	if (!cpu_online(cpu))

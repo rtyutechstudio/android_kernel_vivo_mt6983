@@ -97,6 +97,10 @@ struct fbt_boost_info {
 	int target_fps;
 	unsigned long long target_time;
 	unsigned int last_blc;
+	unsigned int last_normal_blc;
+	int sbe_rescue;
+	int uboost_rescue;
+	int keep_enhance;
 
 	/* adjust loading */
 	int loading_weight;
@@ -260,6 +264,7 @@ void fpsgo_clear_uclamp_boost(void);
 void fpsgo_clear_llf_cpu_policy(int orig_llf);
 void fpsgo_del_linger(struct render_info *thr);
 int fpsgo_uboost_traverse(unsigned long long ts);
+int fpsgo_sbe_rescue_traverse(int pid, int start, int enhance);
 int fpsgo_base_is_finished(struct render_info *thr);
 int fpsgo_update_swap_buffer(int pid);
 void fpsgo_sentcmd(int cmd, int value1, int value2);

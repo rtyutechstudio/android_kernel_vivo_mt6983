@@ -14,6 +14,13 @@
 *.symvers
 .tmp*
 vmlinux*
+# Linker scripts and headers are source, not linked kernel artifacts.
+!vmlinux*.h
+!vmlinux*.S
+!vmlinux*.sh
+!vmlinux*.lds
+!vmlinux*.scr
+!vmlinux-gdb.py
 System.map
 include/config/
 include/generated/
