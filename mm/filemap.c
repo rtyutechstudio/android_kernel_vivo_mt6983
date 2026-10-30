@@ -11,6 +11,7 @@
  * the NFS filesystem used to do this differently, for example)
  */
 #include <linux/export.h>
+#include <linux/x80_iolimit.h>
 #include <linux/compiler.h>
 #include <linux/dax.h>
 #include <linux/fs.h>
@@ -2233,6 +2234,9 @@ ssize_t generic_file_buffered_read(struct kiocb *iocb,
 		loff_t isize;
 		unsigned long nr, ret;
 
+		/* Preserve NOWAIT/queued-read nonblocking semantics. */
+		if (!(iocb->ki_flags & (IOCB_NOWAIT | IOCB_WAITQ)))
+			do_io_read_bandwidth_control(PAGE_SIZE);
 		cond_resched();
 find_page:
 		if (fatal_signal_pending(current)) {
@@ -3440,6 +3444,7 @@ ssize_t generic_perform_write(struct file *file,
 		size_t copied;		/* Bytes copied from user */
 		void *fsdata;
 
+		do_io_write_bandwidth_control(PAGE_SIZE);
 		offset = (pos & (PAGE_SIZE - 1));
 		bytes = min_t(unsigned long, PAGE_SIZE - offset,
 						iov_iter_count(i));

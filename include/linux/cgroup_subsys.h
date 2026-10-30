@@ -68,6 +68,13 @@ SUBSYS(rdma)
 SUBSYS(debug)
 #endif
 
+/* X80 stock appends this vendor controller after all upstream ones.
+ * Its real slot is ABI-visible to the shipped cpuqos module.
+ */
+#if IS_ENABLED(CONFIG_RSC_IOLIMIT)
+SUBSYS(iolimit)
+#endif
+
 /*
  * DO NOT ADD ANY SUBSYSTEM WITHOUT EXPLICIT ACKS FROM CGROUP MAINTAINERS.
  */

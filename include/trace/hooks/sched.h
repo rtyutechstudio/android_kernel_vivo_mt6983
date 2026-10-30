@@ -10,6 +10,13 @@
  * Following tracepoints are not exported in tracefs and provide a
  * mechanism for vendor modules to hook and extend functionality
  */
+/* The shipped X80 schedutil extension invokes this hook after calculating
+ * shared-policy next_freq, before the fast/deferred frequency switch.
+ */
+DECLARE_HOOK(android_vh_sugov_update_shared,
+	TP_PROTO(unsigned int *next_freq, unsigned int cpu),
+	TP_ARGS(next_freq, cpu));
+
 struct task_struct;
 DECLARE_RESTRICTED_HOOK(android_rvh_select_task_rq_fair,
 	TP_PROTO(struct task_struct *p, int prev_cpu, int sd_flag, int wake_flags, int *new_cpu),

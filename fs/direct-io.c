@@ -21,6 +21,7 @@
  */
 
 #include <linux/kernel.h>
+#include <linux/x80_iolimit.h>
 #include <linux/module.h>
 #include <linux/types.h>
 #include <linux/fs.h>
@@ -946,6 +947,10 @@ static int do_direct_IO(struct dio *dio, struct dio_submit *sdio,
 		struct page *page;
 		size_t from, to;
 
+		if (dio->op == REQ_OP_WRITE)
+			do_io_write_bandwidth_control(PAGE_SIZE);
+		else
+			do_io_read_bandwidth_control(PAGE_SIZE);
 		page = dio_get_page(dio, sdio);
 		if (IS_ERR(page)) {
 			ret = PTR_ERR(page);

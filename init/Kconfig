@@ -1090,6 +1090,13 @@ config CGROUP_CPUACCT
 	  Provides a simple controller for monitoring the
 	  total CPU consumed by the tasks in a cgroup.
 
+config RSC_IOLIMIT
+	bool "X80 legacy I/O bandwidth controller"
+	default y
+	help
+	  Restore the stock X80 legacy iolimit controller and its controller
+	  index, per-cgroup bandwidth budgets and periodic wakeups.
+
 config CGROUP_PERF
 	bool "Perf controller"
 	depends on PERF_EVENTS
