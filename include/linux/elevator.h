@@ -52,6 +52,9 @@ struct elevator_mq_ops {
 	void (*init_icq)(struct io_cq *);
 	void (*exit_icq)(struct io_cq *);
 
+	/* vivo X80: notify the scheduler about a page-lock waiter's priority. */
+	void (*check_priority)(struct request_queue *, int pid, int prio);
+
 	ANDROID_KABI_RESERVE(1);
 	ANDROID_KABI_RESERVE(2);
 	ANDROID_KABI_RESERVE(3);
