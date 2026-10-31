@@ -373,8 +373,14 @@ void fpsgo_ctrl2comp_enqueue_end(int pid,
 			queue_cpu_time, "queue_cpu_time");
 		fpsgo_systrace_c_fbt_debug(pid, f_render->buffer_id,
 			f_render->enqueue_length_real, "enq_length_real");
-		if (running_time != 0)
+		/* QUEUE_END only: never reuse previous frame's estimate after a
+		 * failed/raw-zero current sample. Other notification paths unchanged.
+		 * Main estimator success is XGF_SLPTIME_OK, not XGF_NOTIFY_OK.
+		 */
+		if (xgf_ret == XGF_SLPTIME_OK)
 			f_render->running_time = running_time;
+		else
+			f_render->running_time = 0;
 		f_render->mid = mid;
 
 		fpsgo_comp2fbt_frame_start(f_render,
