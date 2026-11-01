@@ -73,6 +73,9 @@
 #include <linux/perf_event.h>
 #include <linux/ptrace.h>
 #include <linux/vmalloc.h>
+#ifdef CONFIG_KSU_SUSFS_SUS_MAP
+#include <linux/susfs_def.h>
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_MAP
 #include <trace/hooks/mm.h>
 
 #include <trace/events/kmem.h>
@@ -3401,7 +3404,7 @@ static vm_fault_t do_wp_page(struct vm_fault *vmf)
 		return wp_page_copy(vmf);
 	}
 
-#ifdef CONFIG_VIVO_X80_COMPAT
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
 	trace_android_vh_do_wp_page(vmf->page);
 #endif
 	/*
@@ -3760,7 +3763,7 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)
 	inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
 	dec_mm_counter_fast(vma->vm_mm, MM_SWAPENTS);
 	pte = mk_pte(page, vmf->vma_page_prot);
-#ifdef CONFIG_VIVO_X80_COMPAT
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
 	trace_android_vh_do_swap_page(page, &pte, vmf, entry);
 #endif
 	if ((vmf->flags & FAULT_FLAG_WRITE) && reuse_swap_page(page, NULL)) {
@@ -3912,7 +3915,7 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 	 * the set_pte_at() write.
 	 */
 	__SetPageUptodate(page);
-#ifdef CONFIG_VIVO_X80_COMPAT
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
 	trace_android_vh_do_anonymous_page(vma, page);
 #endif
 
@@ -5492,11 +5495,20 @@ int __access_remote_vm(struct task_struct *tsk, struct mm_struct *mm,
 	if (mmap_read_lock_killable(mm))
 		return 0;
 
+#ifdef CONFIG_KSU_SUSFS_SUS_MAP
+	vma = find_vma(mm, addr);
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_MAP
+
 	/* ignore errors, just check how much was successfully transferred */
 	while (len) {
 		int bytes, ret, offset;
 		void *maddr;
 		struct page *page = NULL;
+
+#ifdef CONFIG_KSU_SUSFS_SUS_MAP
+		if (vma && vma->vm_file && SUSFS_IS_INODE_SUS_MAP(file_inode(vma->vm_file)))
+			break;
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_MAP
 
 		ret = get_user_pages_remote(mm, addr, 1,
 				gup_flags, &page, &vma, NULL);

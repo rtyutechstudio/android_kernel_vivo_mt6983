@@ -183,6 +183,10 @@ enum node_stat_item {
 	NR_INACTIVE_FILE,	/*  "     "     "   "       "         */
 	NR_ACTIVE_FILE,		/*  "     "     "   "       "         */
 	NR_UNEVICTABLE,		/*  "     "     "   "       "         */
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
+	NR_VITAL,
+	NR_STAPLE,
+#endif
 	NR_SLAB_RECLAIMABLE_B,
 	NR_SLAB_UNRECLAIMABLE_B,
 	NR_ISOLATED_ANON,	/* Temporary isolated pages from anon lru */
@@ -264,6 +268,10 @@ enum lru_list {
 	LRU_INACTIVE_FILE = LRU_BASE + LRU_FILE,
 	LRU_ACTIVE_FILE = LRU_BASE + LRU_FILE + LRU_ACTIVE,
 	LRU_UNEVICTABLE,
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
+	LRU_VITAL,
+	LRU_STAPLE,
+#endif
 	NR_LRU_LISTS
 };
 

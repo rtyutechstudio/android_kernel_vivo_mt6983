@@ -56,6 +56,7 @@
 #include <linux/futex.h>
 #include <linux/compat.h>
 #include <linux/kthread.h>
+#include <linux/x80_stock_qos_private.h>
 #include <linux/task_io_accounting_ops.h>
 #include <linux/rcupdate.h>
 #include <linux/ptrace.h>
@@ -992,10 +993,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	tsk->android_kabi_reserved4 = 0;
 	trace_android_vh_dup_task_struct(tsk, orig);
 	/* Stock OEM policy overlay at d28..e70, initialized after dup hooks. */
-	memset((u8 *)tsk->android_oem_data1 + 0x18, 0, 0x148);
-	((u8 *)tsk->android_oem_data1)[0x19] = 0xff;
-	INIT_LIST_HEAD((struct list_head *)((u8 *)tsk->android_oem_data1 + 0x90));
-	((u8 *)tsk->android_oem_data1)[0xe2] = 0xff;
+	x80_stock_qos_init_new_task(tsk);
 	return tsk;
 
 free_stack:
@@ -2546,6 +2544,8 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 		get_task_struct(p);
 	}
 
+	/* Stock kernel_clone+0x5b4, before child first runnable. */
+	x80_stock_fork_set_rsc_qos_level(p);
 	wake_up_new_task(p);
 
 	/* forking complete and child started to run, tell ptracer */

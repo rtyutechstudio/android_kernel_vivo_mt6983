@@ -7683,3 +7683,7 @@ CONFIG_CC_HAS_SANCOV_TRACE_PC=y
 CONFIG_VIVO_X80_RSC_BASE=y
 
 CONFIG_VIVO_X80_RSC_FREQ_RULE=m
+
+# Root support intentionally disabled in the original X80 configuration.
+# CONFIG_KSU is not set
+# CONFIG_KPM is not set

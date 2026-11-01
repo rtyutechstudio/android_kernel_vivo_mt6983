@@ -2137,6 +2137,11 @@ static void shrink_active_list(unsigned long nr_to_scan,
 			}
 		}
 
+		/* Stock vital-list demotion; optional admission policy is not enabled. */
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
+		if (TestClearPageVital(page))
+			SetPageCandi(page);
+#endif
 		ClearPageActive(page);	/* we are de-activating */
 		SetPageWorkingset(page);
 		list_add(&page->lru, &l_inactive);

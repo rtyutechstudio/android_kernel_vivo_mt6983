@@ -1515,6 +1515,10 @@ static struct memory_stat memory_stats[] = {
 	{ "inactive_file", PAGE_SIZE, NR_INACTIVE_FILE },
 	{ "active_file", PAGE_SIZE, NR_ACTIVE_FILE },
 	{ "unevictable", PAGE_SIZE, NR_UNEVICTABLE },
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
+	{ "vital", PAGE_SIZE, NR_VITAL },
+	{ "staple", PAGE_SIZE, NR_STAPLE },
+#endif
 
 	/*
 	 * Note: The slab_reclaimable and slab_unreclaimable must be

@@ -1736,7 +1736,7 @@ static int shmem_swapin_page(struct inode *inode, pgoff_t index,
 
 	/* We have to do this with page locked to prevent races */
 	lock_page(page);
-#ifdef CONFIG_VIVO_X80_COMPAT
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
 	trace_android_vh_shmem_swapin_page(page);
 #endif
 	if (!PageSwapCache(page) || page_private(page) != swap.val ||

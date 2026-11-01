@@ -126,8 +126,8 @@ DECLARE_HOOK(android_vh_mmap_region,
 DECLARE_HOOK(android_vh_try_to_unmap_one,
 	TP_PROTO(struct vm_area_struct *vma, struct page *page, unsigned long addr, bool ret),
 	TP_ARGS(vma, page, addr, ret));
-#ifdef CONFIG_VIVO_X80_COMPAT
-/* Exact callback ABI used by the shipped X80 zram module. */
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
+/* Stock X80 zram callback ABI; DECLARE_HOOK supplies the data argument. */
 DECLARE_HOOK(android_vh_do_anonymous_page,
 	TP_PROTO(struct vm_area_struct *vma, struct page *page),
 	TP_ARGS(vma, page));

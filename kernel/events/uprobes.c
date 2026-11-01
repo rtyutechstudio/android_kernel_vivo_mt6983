@@ -186,7 +186,7 @@ static int __replace_page(struct vm_area_struct *vma, unsigned long addr,
 		get_page(new_page);
 		page_add_new_anon_rmap(new_page, vma, addr, false);
 		lru_cache_add_inactive_or_unevictable(new_page, vma);
-#ifdef CONFIG_VIVO_X80_COMPAT
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
 		trace_android_vh_uprobes_replace_page(new_page, old_page);
 #endif
 	} else

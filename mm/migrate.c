@@ -597,13 +597,18 @@ void migrate_page_states(struct page *newpage, struct page *page)
 		SetPageActive(newpage);
 	} else if (TestClearPageUnevictable(page))
 		SetPageUnevictable(newpage);
+	/* The vital page is active, but its list ownership survives migration. */
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
+	if (TestClearPageVital(page))
+		SetPageVital(newpage);
+#endif
 	if (PageWorkingset(page))
 		SetPageWorkingset(newpage);
 	if (PageChecked(page))
 		SetPageChecked(newpage);
 	if (PageMappedToDisk(page))
 		SetPageMappedToDisk(newpage);
-#ifdef CONFIG_VIVO_X80_COMPAT
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
 	trace_android_vh_look_around_migrate_page(page, newpage);
 #endif
 

@@ -559,7 +559,10 @@ static void lru_deactivate_file_fn(struct page *page, struct lruvec *lruvec,
 	active = PageActive(page);
 	lru = page_lru_base_type(page);
 
-	del_page_from_lru_list(page, lruvec, lru + active);
+	del_page_from_lru_list(page, lruvec, page_lru(page));
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
+	ClearPageVital(page);
+#endif
 	ClearPageActive(page);
 	ClearPageReferenced(page);
 
@@ -594,7 +597,10 @@ static void lru_deactivate_fn(struct page *page, struct lruvec *lruvec,
 		int lru = page_lru_base_type(page);
 		int nr_pages = thp_nr_pages(page);
 
-		del_page_from_lru_list(page, lruvec, lru + LRU_ACTIVE);
+		del_page_from_lru_list(page, lruvec, page_lru(page));
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
+		ClearPageVital(page);
+#endif
 		ClearPageActive(page);
 		ClearPageReferenced(page);
 		add_page_to_lru_list(page, lruvec, lru);
@@ -1185,6 +1191,9 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec,
 	} else {
 		lru = LRU_UNEVICTABLE;
 		ClearPageActive(page);
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
+		ClearPageVital(page);
+#endif
 		SetPageUnevictable(page);
 		if (!was_unevictable)
 			__count_vm_events(UNEVICTABLE_PGCULLED, nr_pages);

@@ -2,6 +2,16 @@
 
 menu "Memory Management options"
 
+config VIVO_X80_ZRAM_MM
+	bool "X80 official zram MM trace hooks and page-flag lifecycle"
+	depends on ARM64 && 64BIT && ANDROID_VENDOR_HOOKS && TRACEPOINTS
+	help
+	  Provide the six real, typed MM tracepoints and allocator cleanup of
+	  the four fixed page-flag bits used by the unchanged X80 zram module.
+	  This does not enable the legacy compatibility fallback providers,
+	  replace zram/zsmalloc, or certify the remaining private-layout ABI.
+	  Keep disabled until the stock memcg/LRU and module ABI are restored.
+
 config VIVO_X80_COMPAT
 	bool "X80 vendor zram MM compatibility"
 	depends on ARM64 && 64BIT && VIVO_MODULE_VERMAGIC

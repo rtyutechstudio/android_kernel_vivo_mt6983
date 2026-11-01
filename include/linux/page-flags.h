@@ -132,9 +132,15 @@ enum pageflags {
 #ifdef CONFIG_MEMORY_FAILURE
 	PG_hwpoison,		/* hardware poisoned page. Don't touch */
 #endif
-#if defined(CONFIG_IDLE_PAGE_TRACKING) && defined(CONFIG_64BIT)
+#if defined(CONFIG_64BIT) && (defined(CONFIG_IDLE_PAGE_TRACKING) || defined(CONFIG_VIVO_X80_ZRAM_MM))
 	PG_young,
 	PG_idle,
+#endif
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
+	PG_vital,
+	PG_staple,
+	PG_candi,
+	PG_urgent,
 #endif
 #ifdef CONFIG_64BIT
 	PG_arch_2,
@@ -401,6 +407,13 @@ PAGEFLAG(LRU, lru, PF_HEAD) __CLEARPAGEFLAG(LRU, lru, PF_HEAD)
 #endif
 PAGEFLAG(Active, active, PF_HEAD) __CLEARPAGEFLAG(Active, active, PF_HEAD)
 	TESTCLEARFLAG(Active, active, PF_HEAD)
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
+PAGEFLAG(Vital, vital, PF_HEAD) __CLEARPAGEFLAG(Vital, vital, PF_HEAD)
+	TESTCLEARFLAG(Vital, vital, PF_HEAD)
+PAGEFLAG(Staple, staple, PF_HEAD) __CLEARPAGEFLAG(Staple, staple, PF_HEAD)
+PAGEFLAG(Candi, candi, PF_HEAD)
+PAGEFLAG(Urgent, urgent, PF_HEAD)
+#endif
 PAGEFLAG(Workingset, workingset, PF_HEAD)
 	TESTCLEARFLAG(Workingset, workingset, PF_HEAD)
 __PAGEFLAG(Slab, slab, PF_NO_TAIL)
@@ -912,11 +925,11 @@ static inline void ClearPageSlabPfmemalloc(struct page *page)
  * alloc-free cycle to prevent from reusing the page.
  */
 /*
- * X80 zram's shipped module owns fixed bits 30..33, outside our enum.
- * Clear them on allocator reuse and THP tail preparation, not at FREE checks.
- * Do not renumber the existing flags or extend the mask across bits 24..29.
+ * X80's page-flag enum occupies bits 0..29; shipped zram also owns 30..33.
+ * All enum flags and these four private bits are cleared on allocator reuse
+ * and THP tail preparation. Private bits are not added to FREE checks.
  */
-#ifdef CONFIG_VIVO_X80_COMPAT
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
 #if BITS_PER_LONG != 64 || NR_PAGEFLAGS > 30
 #error "X80 zram private page flags overlap the native flags"
 #endif

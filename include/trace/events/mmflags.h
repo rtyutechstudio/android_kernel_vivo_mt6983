@@ -73,7 +73,7 @@
 #define IF_HAVE_PG_HWPOISON(flag,string)
 #endif
 
-#if defined(CONFIG_IDLE_PAGE_TRACKING) && defined(CONFIG_64BIT)
+#if defined(CONFIG_64BIT) && (defined(CONFIG_IDLE_PAGE_TRACKING) || defined(CONFIG_VIVO_X80_ZRAM_MM))
 #define IF_HAVE_PG_IDLE(flag,string) ,{1UL << flag, string}
 #else
 #define IF_HAVE_PG_IDLE(flag,string)
@@ -95,6 +95,16 @@
 #define IF_HAVE_PG_DEBUG(flag,string) ,{1UL << flag, string}
 #else
 #define IF_HAVE_PG_DEBUG(flag,string)
+#endif
+
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
+#define IF_HAVE_PG_X80() \
+	,{1UL << PG_vital, "vital"} \
+	,{1UL << PG_staple, "staple"} \
+	,{1UL << PG_candi, "candi"} \
+	,{1UL << PG_urgent, "urgent"}
+#else
+#define IF_HAVE_PG_X80()
 #endif
 
 #define __def_pageflag_names						\
@@ -124,6 +134,7 @@ IF_HAVE_PG_UNCACHED(PG_uncached,	"uncached"	)		\
 IF_HAVE_PG_HWPOISON(PG_hwpoison,	"hwpoison"	)		\
 IF_HAVE_PG_IDLE(PG_young,		"young"		)		\
 IF_HAVE_PG_IDLE(PG_idle,		"idle"		)		\
+IF_HAVE_PG_X80()							\
 IF_HAVE_PG_ARCH_2(PG_arch_2,		"arch_2"	)		\
 IF_HAVE_PG_SKIP_KASAN_POISON(PG_skip_kasan_poison, "skip_kasan_poison")	\
 IF_HAVE_PG_DEBUG(PG_debug,		"debug"		)

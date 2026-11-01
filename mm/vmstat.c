@@ -1183,6 +1183,10 @@ const char * const vmstat_text[] = {
 	"nr_inactive_file",
 	"nr_active_file",
 	"nr_unevictable",
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
+	"nr_vital",
+	"nr_staple",
+#endif
 	"nr_slab_reclaimable",
 	"nr_slab_unreclaimable",
 	"nr_isolated_anon",

@@ -103,7 +103,15 @@ static __always_inline enum lru_list page_off_lru(struct page *page)
 	if (PageUnevictable(page)) {
 		__ClearPageUnevictable(page);
 		lru = LRU_UNEVICTABLE;
-	} else {
+	}
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
+	else if (PageVital(page)) {
+		__ClearPageVital(page);
+		__ClearPageActive(page);
+		lru = LRU_VITAL;
+	}
+#endif
+	else {
 		lru = page_lru_base_type(page);
 		if (PageActive(page)) {
 			__ClearPageActive(page);
@@ -126,6 +134,10 @@ static __always_inline enum lru_list page_lru(struct page *page)
 
 	if (PageUnevictable(page))
 		lru = LRU_UNEVICTABLE;
+#ifdef CONFIG_VIVO_X80_ZRAM_MM
+	else if (PageVital(page))
+		lru = LRU_VITAL;
+#endif
 	else {
 		lru = page_lru_base_type(page);
 		if (PageActive(page))

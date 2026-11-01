@@ -37,3 +37,7 @@ usr/initramfs_data.cpio
 .clang/
 __pycache__/
 *.log
+# Independent defconfig output trees and patch backup files.
+out/
+*.orig
+*.rej
