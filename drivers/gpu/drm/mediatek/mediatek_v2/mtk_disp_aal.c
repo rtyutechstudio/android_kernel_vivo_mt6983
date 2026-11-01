@@ -81,6 +81,14 @@ static atomic_t g_aal_sof_irq_available = ATOMIC_INIT(0);
 static atomic_t g_aal_is_init_regs_valid = ATOMIC_INIT(0);
 
 static atomic_t g_aal_backlight_notified = ATOMIC_INIT(1023);
+
+/* Report the backlight level tracked by the display/LED notifier. */
+bool is_panel_backlight_on(void)
+{
+	return atomic_read(&g_aal_backlight_notified) > 0;
+}
+EXPORT_SYMBOL_GPL(is_panel_backlight_on);
+
 static atomic_t g_aal_initialed = ATOMIC_INIT(0);
 static atomic_t g_aal_allowPartial = ATOMIC_INIT(0);
 static atomic_t g_aal_force_enable_irq = ATOMIC_INIT(0);

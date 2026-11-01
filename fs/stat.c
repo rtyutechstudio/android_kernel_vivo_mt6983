@@ -210,7 +210,7 @@ int vfs_fstat(int fd, struct kstat *stat)
 		return -EBADF;
 	error = vfs_getattr(&f.file->f_path, stat, STATX_BASIC_STATS, 0);
 #ifdef CONFIG_KSU_SUSFS
-	if (static_branch_unlikely(&ksu_is_init_rc_hook_enabled))
+	if (!error && static_branch_unlikely(&ksu_is_init_rc_hook_enabled))
 		ksu_handle_vfs_fstat(fd, &stat->size);
 #endif // #ifdef CONFIG_KSU_SUSFS
 	fdput(f);

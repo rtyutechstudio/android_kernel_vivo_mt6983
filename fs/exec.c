@@ -1868,12 +1868,12 @@ extern int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 				void *envp, int *flags);
 extern int ksu_handle_post_execveat_sucompat(int *fd, struct filename **filename_ptr, void *argv,
 				void *envp, int *flags, int *retval);
-#ifdef CONFIG_KSU_PREINIT
+#ifndef KSU_NO_PREINIT
 extern int ksu_setup_preinit_file(struct filename **filename_ptr, struct user_arg_ptr *argv_user);
 extern int ksu_preinit_handle_post_execveat(int *fd, struct filename **filename_ptr,
 				void *argv_user, void *envp_user,
 				int *flags, int *retval, int *preinit_fd);
-#endif // #ifdef CONFIG_KSU_PREINIT
+#endif // #ifndef KSU_NO_PREINIT
 #endif // #ifdef CONFIG_KSU_SUSFS
 
 static int do_execveat_common(int fd, struct filename *filename,
@@ -1885,10 +1885,10 @@ static int do_execveat_common(int fd, struct filename *filename,
 	int retval;
 #ifdef CONFIG_KSU_SUSFS
 	bool is_su_session = false;
-#ifdef CONFIG_KSU_PREINIT
+#ifndef KSU_NO_PREINIT
 	bool is_ksu_preinit_session = false;
 	int preinit_fd = 0;
-#endif // #ifdef CONFIG_KSU_PREINIT
+#endif // #ifndef KSU_NO_PREINIT
 #endif // #ifdef CONFIG_KSU_SUSFS
 
 	if (IS_ERR(filename))
@@ -1906,7 +1906,7 @@ static int do_execveat_common(int fd, struct filename *filename,
 		}
 	}
 
-#ifdef CONFIG_KSU_PREINIT
+#ifndef KSU_NO_PREINIT
 	if (unlikely(current->pid == 1) && !is_su_session) {
 		if (fd == AT_FDCWD || !(flags & AT_EMPTY_PATH)) {
 			preinit_fd = ksu_setup_preinit_file(&filename, &argv);
@@ -1914,7 +1914,7 @@ static int do_execveat_common(int fd, struct filename *filename,
 				is_ksu_preinit_session = true;
 		}
 	}
-#endif // #ifdef CONFIG_KSU_PREINIT
+#endif // #ifndef KSU_NO_PREINIT
 
 orig_flow:
 #endif
@@ -1974,7 +1974,7 @@ orig_flow:
 		(void)ksu_handle_post_execveat_sucompat(&fd, &filename, &argv, &envp, &flags, &retval);
 	}
 
-#ifdef CONFIG_KSU_PREINIT
+#ifndef KSU_NO_PREINIT
 	if (unlikely(is_ksu_preinit_session)) {
 		if (ksu_preinit_handle_post_execveat(&fd, &filename, &argv, &envp, &flags, &retval, &preinit_fd)) {
 			free_bprm(bprm);
@@ -1983,7 +1983,7 @@ orig_flow:
 		}
 		goto out_free;
 	}
-#endif // #ifdef CONFIG_KSU_PREINIT
+#endif // #ifndef KSU_NO_PREINIT
 #endif // #ifdef CONFIG_KSU_SUSFS
 out_free:
 	free_bprm(bprm);

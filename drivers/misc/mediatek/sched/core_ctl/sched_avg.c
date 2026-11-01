@@ -613,15 +613,6 @@ static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se)
 #endif
 }
 
-static inline bool cfs_bandwidth_used(void)
-{
-	return true;
-}
-
-static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq)
-{
-	return cfs_bandwidth_used() && cfs_rq->throttled;
-}
 #endif
 
 void inc_nr_over_thres_running(void *data, struct rq *rq, struct task_struct *p, int flags)
