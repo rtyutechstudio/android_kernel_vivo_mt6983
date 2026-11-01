@@ -6758,6 +6758,9 @@ tracing_mark_write(struct file *filp, const char __user *ubuf,
 	return written;
 }
 
+/* Stock RSC text traces use the real tracing marker's CFI address as ip. */
+unsigned long tracing_mark_write_ext = (unsigned long)tracing_mark_write;
+
 /* Limit it for now to 3K (including tag) */
 #define RAW_DATA_MAX_SIZE (1024*3)
 

@@ -87,6 +87,60 @@ DEFINE_SPINLOCK(css_set_lock);
 DEFINE_SPINLOCK(g_tsk_tg_lock);
 EXPORT_SYMBOL(g_tsk_tg_lock);
 
+/* X80 CPU CSS classification: stock stride-4 unsigned classes and genuine
+ * linux u32 typedef chain restore the natural exported declaration ABI.
+ */
+u32 css_id_to_group_id[32] = { 0, [1 ... 31] = 2 };
+EXPORT_SYMBOL(css_id_to_group_id);
+
+/* Stock CPU CSS creation also remembers these raw CSS IDs. These are
+ * distinct from classification values; original .data initializes both to 0.
+ */
+int rsc_top_task_group_id;
+int rsc_foreground_task_group_id;
+
+#ifdef CONFIG_CGROUP_SCHED
+static void x80_classify_cpu_css(struct cgroup *cgrp,
+                                struct cgroup_subsys *ss, int id)
+{
+	const char *name;
+	int group;
+
+	lockdep_assert_held(&cgroup_mutex);
+	if (ss != &cpu_cgrp_subsys)
+		return;
+	name = cgrp->kn->name;
+	if (!strcmp(name, "top-app")) {
+		rsc_top_task_group_id = id;
+		group = 0;
+	} else if (!strcmp(name, "background")) {
+		group = 3;
+	} else if (!strcmp(name, "foreground")) {
+		rsc_foreground_task_group_id = id;
+		group = 0;
+	} else if (!strcmp(name, "h-background")) {
+		group = 1;
+	} else if (!strcmp(name, "l-background")) {
+		group = 3;
+	} else if (!strcmp(name, "l-foreground") ||
+		   !strcmp(name, "restricted")) {
+		group = 0;
+	} else if (!strcmp(name, "system-background")) {
+		group = 1;
+	} else if (!strcmp(name, "heatctl")) {
+		group = 5;
+	} else {
+		group = 2;
+	}
+	/* Called only after successful IDR allocation (IDs start at 2).
+	 * Stock writes every reused slot before publication, and does not
+	 * reset on failure/free/rename. Do not invent an early reset.
+	 */
+	if (id <= 31)
+		WRITE_ONCE(css_id_to_group_id[id], group);
+}
+#endif
+
 /* Measured stock ABI, not a replacement allocation owned by this kernel. */
 struct x80_pem_cfg {
 	u8 reserved[0x76];
@@ -5303,6 +5357,9 @@ static struct cgroup_subsys_state *css_create(struct cgroup *cgrp,
 	if (err < 0)
 		goto err_free_css;
 	css->id = err;
+#ifdef CONFIG_CGROUP_SCHED
+	x80_classify_cpu_css(cgrp, ss, css->id);
+#endif
 
 	/* @css is ready to be brought online now, make it visible */
 	list_add_tail_rcu(&css->sibling, &parent_css->children);

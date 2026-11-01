@@ -11,9 +11,13 @@ struct rsc_base_snapshot {
 	u32 min, max, old, cur;
 	bool valid;
 };
+/* Semantic debug control recovery; exact original typedef/CRC still pending. */
+extern unsigned long rsc_debug;
 extern struct kobject *rsc_root_dir;
-extern cpumask_t rsc_cpu_littlecore, rsc_cpu_midcore;
-extern cpumask_t cpus_paused_by_thermal;
+extern struct cpumask rsc_cpu_littlecore, rsc_cpu_midcore;
+extern struct cpumask rsc_cpu_bigcore, rsc_cpu_maxcore;
+extern unsigned long rsc_capacity_of_little;
+extern struct cpumask cpus_paused_by_thermal;
 extern struct cpufreq_freqs rsc_cpu_freqs[RSC_BASE_CLUSTERS];
 extern unsigned int rsc_max_freq[RSC_BASE_CLUSTERS];
 extern unsigned int *rsc_min_freq[RSC_BASE_CLUSTERS];
@@ -33,7 +37,10 @@ struct kobject *rsc_base_kobject_get(void);
 void rsc_base_kobject_put(struct kobject *root);
 /* Source spelling intentionally distinct: stock chown CRC/CFI unresolved. */
 int rsc_base_chown_attr(struct kobject *kobj, struct attribute *attr);
+int rsc_chown_to_system(struct kobject *kobj, struct attribute *attr);
 /* Caller MUST serialize action + commit using the one perf_ioctl mutex. */
 int rsc_base_thermal_commit(unsigned int cpu, bool pause);
-/* Deliberately no rsc_capacity_of_little substitute or guessed cluster ABI. */
+/* Compatibility freq/QoS/chown exports are intentionally not provided yet.
+ * min/max here remain native policy snapshots, not stock QoS owners.
+ */
 #endif

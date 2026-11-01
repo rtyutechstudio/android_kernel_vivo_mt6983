@@ -11,6 +11,7 @@
 #include <linux/mman.h>
 #include <linux/reboot.h>
 #include <linux/prctl.h>
+#include "sched/x80_stock_qos_identity.h"
 #include <linux/highuid.h>
 #include <linux/fs.h>
 #include <linux/kmod.h>
@@ -2501,6 +2502,7 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
 		if (strncpy_from_user(comm, (char __user *)arg2,
 				      sizeof(me->comm) - 1) < 0)
 			return -EFAULT;
+		x80_stock_qos_prctl_name(me, comm);
 		set_task_comm(me, comm);
 		proc_comm_connector(me);
 		break;

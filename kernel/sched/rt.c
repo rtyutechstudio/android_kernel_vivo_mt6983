@@ -4,6 +4,12 @@
  * policies)
  */
 #include "sched.h"
+#include <linux/x80_stock_qos_private.h>
+/* Genuine u32[12] storage is owned/exported by vivo_x80_compat.c. */
+extern u32 rsc_preempt_boost_rt_skip[12];
+#ifdef CONFIG_VIVO_X80_RSC_BASE
+#include <linux/vivo_x80_rsc_base.h>
+#endif
 
 #include "pelt.h"
 
@@ -470,6 +476,17 @@ static inline bool rt_task_fits_capacity(struct task_struct *p, int cpu)
 	max_cap = uclamp_eff_value(p, UCLAMP_MAX);
 
 	cpu_cap = capacity_orig_of(cpu);
+#ifdef CONFIG_VIVO_X80_RSC_BASE
+	/* Stock rt_task_fits_capacity, Image+0x1f5e10..0x1f5e58:
+	 * the freq-rule consumer owns this little-cluster override.
+	 */
+	if (cpumask_test_cpu(cpu, &rsc_cpu_littlecore)) {
+		unsigned long override = READ_ONCE(rsc_capacity_of_little);
+
+		if (override)
+			cpu_cap = (unsigned int)override;
+	}
+#endif
 
 	return cpu_cap >= min(min_cap, max_cap);
 }
@@ -1412,6 +1429,16 @@ enqueue_task_rt(struct rq *rq, struct task_struct *p, int flags)
 	if (!task_current(rq, p) && p->nr_cpus_allowed > 1 &&
 	    !should_honor_rt_sync(rq, p, sync))
 		enqueue_pushable_task(rq, p);
+{
+	struct task_struct *active = READ_ONCE(rq->curr);
+	if (active && x80_stock_task_read_u8(active, X80_QOS_SVP_ACTIVE)) {
+		WRITE_ONCE(x80_stock_task_oem_mut(active)[X80_QOS_SVP_SENTINEL], 0);
+		set_bit(30, &active->thread_info.flags);
+		WRITE_ONCE(rsc_preempt_boost_rt_skip[7],
+			   READ_ONCE(rsc_preempt_boost_rt_skip[7]) + 1);
+	}
+}
+
 }
 
 static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int flags)

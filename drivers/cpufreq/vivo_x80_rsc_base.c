@@ -10,14 +10,48 @@
 #include <linux/uidgid.h>
 #include <linux/sched/topology.h>
 #include <linux/spinlock.h>
+#include <linux/mutex.h>
 #include <linux/vivo_x80_rsc_base.h>
 
+/* Stock Image has eight bytes of zero-initialized debug storage; all proven
+ * show/store/mtk_fpsgo accesses are to its low 32 bits. Keep the full word, not
+ * a pointer, and preserve high bits on low-word sysfs updates. The exact stock
+ * typedef/CRC is NOT certified by this semantic restoration candidate.
+ */
+unsigned long rsc_debug;
+EXPORT_SYMBOL_GPL(rsc_debug);
+static DEFINE_MUTEX(rsc_debug_lock);
+
 struct kobject *rsc_root_dir;
-cpumask_t rsc_cpu_littlecore, rsc_cpu_midcore, cpus_paused_by_thermal;
+struct cpumask rsc_cpu_littlecore, rsc_cpu_midcore, cpus_paused_by_thermal;
+struct cpumask rsc_cpu_bigcore, rsc_cpu_maxcore;
+/* Scalar capacity override: real stock freq-rule consumer writes this.
+ * Do not refresh from arch capacity during policy update/topology replay.
+ * Remaining core RT/scheduler readers must be restored separately.
+ */
+unsigned long rsc_capacity_of_little;
+EXPORT_SYMBOL(rsc_root_dir);
+EXPORT_SYMBOL_GPL(rsc_cpu_littlecore);
+EXPORT_SYMBOL_GPL(rsc_cpu_midcore);
+EXPORT_SYMBOL_GPL(rsc_cpu_bigcore);
+EXPORT_SYMBOL_GPL(rsc_cpu_maxcore);
+EXPORT_SYMBOL_GPL(rsc_capacity_of_little);
+/* Official perf_ioctl commits this same mask only after real pause success. */
+EXPORT_SYMBOL_GPL(cpus_paused_by_thermal);
 struct cpufreq_freqs rsc_cpu_freqs[3];
 unsigned int rsc_max_freq[3];
 static unsigned int live_min[3];
 unsigned int *rsc_min_freq[3] = { &live_min[0], &live_min[1], &live_min[2] };
+/* Stock min pointees are effective policy->min snapshots, not QoS requests.
+ * The permanent targets preserve consumer read lifetime across detach.
+ */
+EXPORT_SYMBOL_GPL(rsc_min_freq);
+EXPORT_SYMBOL_GPL(rsc_max_freq);
+/* All 237 official modules audited: only rsc_freq_rule imports this object,
+ * and both access sites load its middle-cluster .new scalar (array+0x24).
+ * They do not read or retain its native .policy pointer.
+ */
+EXPORT_SYMBOL_GPL(rsc_cpu_freqs);
 /* Static targets live for kernel lifetime, including detached policies. */
 
 static DEFINE_RAW_SPINLOCK(state_lock);
@@ -185,6 +219,8 @@ static void replay_topology(void)
 {
  cpumask_t covered, masks[3];
  unsigned long caps[3] = { 0, 0, 0 }, cap, tmp;
+  unsigned long stock_threshold = 0;
+  unsigned int stock_records = 0;
  int i, j, cpu, n = 0, mapping[3];
  topology_valid = false;
  cpumask_clear(&covered);
@@ -203,6 +239,11 @@ static void replay_topology(void)
   cap = arch_scale_cpu_capacity(cpu);
   if (!cap)
    return;
+  /* Stock second strict record maximum in possible CPU order. */
+  if (stock_records <= 1 && cap > stock_threshold) {
+   stock_records++;
+   stock_threshold = cap;
+  }
   for (i = 0; i < n && caps[i] != cap; ++i) {}
   if (i == n) {
    if (n == 3)
@@ -217,6 +258,9 @@ static void replay_topology(void)
    if (caps[i] > caps[j]) {
     tmp = caps[i]; caps[i] = caps[j]; caps[j] = tmp;
    }
+ /* Preserve native three-class API only on stock-supported CPU order. */
+ if (stock_threshold != caps[1])
+  return;
  for (i = 0; i < 3; ++i)
   cpumask_clear(&masks[i]);
  for_each_possible_cpu(cpu)
@@ -234,6 +278,9 @@ static void replay_topology(void)
  /* One locked publication, replaying scalars copied while owners were alive. */
  cpumask_copy(&rsc_cpu_littlecore, &masks[0]);
  cpumask_copy(&rsc_cpu_midcore, &masks[1]);
+ /* Stock big is mid union max; native API big remains highest cluster. */
+ cpumask_or(&rsc_cpu_bigcore, &masks[1], &masks[2]);
+ cpumask_copy(&rsc_cpu_maxcore, &masks[2]);
  for (i = 0; i < 3; ++i) {
   cluster_slot[i] = mapping[i];
   publish(i, mapping[i]);
@@ -317,6 +364,17 @@ int rsc_base_chown_attr(struct kobject *kobj, struct attribute *attr)
 }
 EXPORT_SYMBOL_GPL(rsc_base_chown_attr);
 
+/* Shipped freq-rule init calls this directly after creating each sysfs file.
+ * Both arguments have measured stock/current field offsets. The wrapper
+ * performs the real UID/GID1000 mutation and balances the kernfs reference.
+ * Exact natural genksyms CRC remains a separate unresolved ABI issue.
+ */
+int rsc_chown_to_system(struct kobject *kobj, struct attribute *attr)
+{
+ return rsc_base_chown_attr(kobj, attr);
+}
+EXPORT_SYMBOL_GPL(rsc_chown_to_system);
+
 int rsc_base_thermal_commit(unsigned int cpu, bool pause)
 {
 	if (cpu >= nr_cpu_ids || !cpu_possible(cpu))
@@ -369,9 +427,41 @@ static struct kobj_attribute thermal_mask_attr = __ATTR_RO(thermal_mask);
 
 static struct kobj_attribute state_attr = __ATTR_RO(state);
 
+/* Stock /sys/rsc/debug is 0640, prints hexadecimal and parses with %x.
+ * This is actual writable control state: the unchanged FPSGO consumer tests
+ * bit21 (rsc_debug+2 bit5) in fpsgo_get_tgid_and_mark. It is not a ready gate
+ * and must not be used to turn off the underlying task mark/CPU CSS policy.
+ */
+static ssize_t debug_show(struct kobject *kobj, struct kobj_attribute *a,
+                          char *buf)
+{
+ return sysfs_emit(buf, "debug: %x\n", (unsigned int)READ_ONCE(rsc_debug));
+}
+
+static ssize_t debug_store(struct kobject *kobj, struct kobj_attribute *a,
+                           const char *buf, size_t count)
+{
+ unsigned int value;
+ unsigned long old;
+
+ if (sscanf(buf, "%x", &value) != 1)
+  return -EINVAL;
+ mutex_lock(&rsc_debug_lock);
+ old = READ_ONCE(rsc_debug);
+ WRITE_ONCE(rsc_debug, (old & ~0xffffffffUL) | value);
+ mutex_unlock(&rsc_debug_lock);
+ return count;
+}
+static struct kobj_attribute debug_attr = __ATTR(debug, 0640,
+                                                debug_show, debug_store);
+
 static struct kobj_attribute ready_attr = __ATTR_RO(ready);
-static struct attribute *base_attrs[] = { &ready_attr.attr, &state_attr.attr, &thermal_mask_attr.attr, NULL };
+static struct attribute *base_attrs[] = { &ready_attr.attr, &state_attr.attr, &thermal_mask_attr.attr, &debug_attr.attr, NULL };
 static const struct attribute_group base_group = { .attrs = base_attrs };
+
+int __init x80_stock_qos_control_init(struct kobject *rsc_root);
+int x80_stock_tick_control_init(struct kobject *rsc_root);
+int x80_stock_qos_knobs_control_init(struct kobject *rsc_root);
 
 int __init rsc_base_core_init(void)
 {
@@ -385,6 +475,15 @@ int __init rsc_base_core_init(void)
   rsc_root_dir = NULL;
   return ret;
  }
+ ret = x80_stock_tick_control_init(rsc_root_dir);
+ if (ret)
+  return ret;
+ ret = x80_stock_qos_knobs_control_init(rsc_root_dir);
+ if (ret)
+  return ret;
+ ret = x80_stock_qos_control_init(rsc_root_dir);
+ if (ret)
+  return ret;
  raw_spin_lock_irq(&state_lock);
  armed = true;
  raw_spin_unlock_irq(&state_lock);

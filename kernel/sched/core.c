@@ -11,6 +11,10 @@
 #undef CREATE_TRACE_POINTS
 
 #include "sched.h"
+#include "x80_stock_qos_tick.h"
+#include "x80_stock_surface_policy.h"
+#include "x80_stock_qos_rq_private.h"
+#include "x80_stock_qos_bandwidth.h"
 
 #include <linux/nospec.h>
 
@@ -1789,6 +1793,14 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 		rq_clock_skip_update(rq);
 }
 EXPORT_SYMBOL_GPL(check_preempt_curr);
+
+/* Genuine CPU-stop migration owner after actual enqueue/dequeue helpers. */
+#include "x80_stock_qos_balance_callback.h"
+void trigger_svp_balance(struct rq *rq, int cpu_qos_enabled)
+{
+ x80_stock_trigger_svp_balance(rq, (u8)cpu_qos_enabled);
+}
+
 
 #ifdef CONFIG_SMP
 
@@ -4231,6 +4243,9 @@ void scheduler_tick(void)
 	struct task_struct *curr = rq->curr;
 	struct rq_flags rf;
 	unsigned long thermal_pressure;
+	/* Stock entry snapshot precedes arch_scale_freq_tick and rq locking. */
+	u64 x80_entry_now = sched_clock();
+	u8 x80_entry_cpu_qos = READ_ONCE(rsc_cpu_qos_enable);
 
 	arch_scale_freq_tick();
 	sched_clock_tick();
@@ -4254,6 +4269,8 @@ void scheduler_tick(void)
 	trigger_load_balance(rq);
 #endif
 
+	x80_stock_qos_scheduler_tick(rq, cpu, x80_entry_now,
+				     x80_entry_cpu_qos);
 	trace_android_vh_scheduler_tick(rq);
 }
 
@@ -4747,6 +4764,9 @@ static void __sched notrace __schedule(bool preempt)
 
 	trace_android_rvh_schedule(prev, next, rq);
 	if (likely(prev != next)) {
+		WRITE_ONCE(prev->android_oem_data1[35], sched_clock()); /* e28 */
+		if (next->flags & PF_IDLE)
+			qos_bw_period_stop(rq);
 		rq->nr_switches++;
 		/*
 		 * RCU users of rcu_dereference(rq->curr) may not see
@@ -5699,6 +5719,7 @@ change:
 	/* Run balance callbacks after we've adjusted the PI chain: */
 	balance_callback(rq);
 	preempt_enable();
+	x80_stock_surface_policy_changed(p, policy);
 
 	return 0;
 
@@ -7555,6 +7576,8 @@ void __init sched_init(void)
 		rq->max_idle_balance_cost = sysctl_sched_migration_cost;
 
 		INIT_LIST_HEAD(&rq->cfs_tasks);
+		/* Separate stock OEM SVP/QoS list, NOT rq->cfs_tasks. */
+		x80_stock_qos_init_rq_shared_list(rq);
 
 		rq_attach_root(rq, &def_root_domain);
 #ifdef CONFIG_NO_HZ_COMMON
@@ -7565,6 +7588,7 @@ void __init sched_init(void)
 #endif
 #endif /* CONFIG_SMP */
 		hrtick_rq_init(rq);
+		qos_bw_data_init(rq);
 		atomic_set(&rq->nr_iowait, 0);
 	}
 

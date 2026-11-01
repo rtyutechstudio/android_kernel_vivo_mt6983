@@ -54,6 +54,7 @@
 #include <linux/fs_struct.h>
 #include <linux/init_task.h>
 #include <linux/perf_event.h>
+#include "sched/x80_stock_qos_control.h"
 #include <trace/events/sched.h>
 #include <linux/hw_breakpoint.h>
 #include <linux/oom.h>
@@ -767,6 +768,7 @@ void __noreturn do_exit(long code)
 
 	io_uring_files_cancel(tsk->files);
 	exit_signals(tsk);  /* sets PF_EXITING */
+	x80_stock_qos_task_exit_finished(tsk);
 
 	/* sync mm's RSS info before statistics gathering */
 	if (tsk->mm)

@@ -677,6 +677,43 @@ DECLARE_TRACE(sched_update_nr_running_tp,
 	TP_PROTO(struct rq *rq, int change),
 	TP_ARGS(rq, change));
 
+/* SPDX-License-Identifier: GPL-2.0 */
+/* Insert INSIDE include/trace/events/sched.h before its closing guard.
+ * sched.h owns CREATE_TRACE_POINTS in existing core.c; no second producer.
+ * Stock event_class_sched_svp_template at 2cad970, raw writer1bba3c.
+ * Fixed msg array and strlcpy bound match raw writer (not __string). */
+DECLARE_EVENT_CLASS(sched_svp_template,
+	TP_PROTO(struct task_struct *task, const char *msg),
+	TP_ARGS(task, msg),
+	TP_STRUCT__entry(
+		__array(char, comm, TASK_COMM_LEN)
+		__field(pid_t, pid)
+		__field(int, prio)
+		__array(char, msg, 64)
+		__field(int, target_cpu)
+		__field(u64, dynamic_svp)
+		__field(int, svp_depth)
+	),
+	TP_fast_assign(
+		unsigned int length;
+		memcpy(__entry->comm, task->comm, TASK_COMM_LEN);
+		__entry->pid = task->pid;
+		__entry->prio = task->prio;
+		length = min_t(unsigned int, strlen(msg) + 1, 64);
+		strlcpy(__entry->msg, msg, length);
+		__entry->target_cpu = smp_load_acquire(&task->cpu);
+		__entry->dynamic_svp = smp_load_acquire(&task->android_oem_data1[21]);
+		__entry->svp_depth = READ_ONCE(((u8 *)task->android_oem_data1)[0x5e]);
+	),
+	TP_printk("comm=%s pid=%d prio=%d msg=%s target_cpu=%03d dynamic_svp:%llx svp_depth:%d",
+		__entry->comm, __entry->pid, __entry->prio, __entry->msg,
+		__entry->target_cpu, __entry->dynamic_svp, __entry->svp_depth)
+);
+DEFINE_EVENT(sched_svp_template, sched_svp_queue_op,
+	TP_PROTO(struct task_struct *task, const char *msg),
+	TP_ARGS(task, msg)
+);
+
 #endif /* _TRACE_SCHED_H */
 
 /* This part must be outside protection */

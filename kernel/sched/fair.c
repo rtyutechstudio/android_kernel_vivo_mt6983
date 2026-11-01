@@ -21,6 +21,9 @@
  *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra
  */
 #include "sched.h"
+#include "x80_stock_qos_dequeue_owner.h"
+#include "x80_stock_qos_running_owner.h"
+#include "x80_stock_qos_bandwidth.h"
 
 #include <trace/hooks/sched.h>
 
@@ -888,6 +891,7 @@ static void update_curr(struct cfs_rq *cfs_rq)
 	if (entity_is_task(curr)) {
 		struct task_struct *curtask = task_of(curr);
 
+		qos_bw_update_curr(rq_of(cfs_rq), delta_exec);
 		trace_sched_stat_runtime(curtask, delta_exec, curr->vruntime);
 		cgroup_account_cputime(curtask, delta_exec);
 		account_group_exec_runtime(curtask, delta_exec);
@@ -4423,6 +4427,30 @@ check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 
 	ideal_runtime = sched_slice(cfs_rq, curr);
 	delta_exec = curr->sum_exec_runtime - curr->prev_sum_exec_runtime;
+	if (READ_ONCE(rsc_cpu_qos_enable)) {
+		int qos_preempt;
+
+		if (delta_exec < sysctl_sched_min_granularity)
+			return;
+		qos_preempt = rsc_qos_tick_preempt_check(rq_of(cfs_rq),
+						 rq_of(cfs_rq)->curr, ideal_runtime);
+		if (qos_preempt > 0) {
+			resched_curr(rq_of(cfs_rq));
+			return;
+		}
+		if (qos_preempt == 0) {
+			if (delta_exec > ideal_runtime) {
+				resched_curr(rq_of(cfs_rq));
+				clear_buddies(cfs_rq, curr);
+			}
+			return;
+		}
+		se = __pick_first_entity(cfs_rq);
+		delta = curr->vruntime - se->vruntime;
+		if (delta >= 0 && delta > ideal_runtime)
+			resched_curr(rq_of(cfs_rq));
+		return;
+	}
 	trace_android_rvh_check_preempt_tick(current, &ideal_runtime, &skip_preempt,
 			delta_exec, cfs_rq, curr, sysctl_sched_min_granularity);
 	if (skip_preempt)
@@ -4751,10 +4779,11 @@ void account_cfs_rq_runtime(struct cfs_rq *cfs_rq, u64 delta_exec)
 	__account_cfs_rq_runtime(cfs_rq, delta_exec);
 }
 
-static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq)
+int cfs_rq_throttled(struct cfs_rq *cfs_rq)
 {
 	return cfs_bandwidth_used() && cfs_rq->throttled;
 }
+EXPORT_SYMBOL(cfs_rq_throttled);
 
 /* check whether cfs_rq, or any parent, is throttled */
 static inline int throttled_hierarchy(struct cfs_rq *cfs_rq)
@@ -5423,10 +5452,11 @@ static void check_enqueue_throttle(struct cfs_rq *cfs_rq) {}
 static inline void sync_throttle(struct task_group *tg, int cpu) {}
 static __always_inline void return_cfs_rq_runtime(struct cfs_rq *cfs_rq) {}
 
-static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq)
+int cfs_rq_throttled(struct cfs_rq *cfs_rq)
 {
 	return 0;
 }
+EXPORT_SYMBOL(cfs_rq_throttled);
 
 static inline int throttled_hierarchy(struct cfs_rq *cfs_rq)
 {
@@ -5594,6 +5624,8 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		flags = ENQUEUE_WAKEUP;
 	}
 
+	if (!cfs_rq_throttled(task_cfs_rq(p)))
+		x80_stock_enqueue_svp_task(rq, p);
 	trace_android_rvh_enqueue_task_fair(rq, p, flags);
 	for_each_sched_entity(se) {
 		cfs_rq = cfs_rq_of(se);
@@ -5683,8 +5715,10 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		cfs_rq->idle_h_nr_running -= idle_h_nr_running;
 
 		/* end evaluation on encountering a throttled cfs_rq */
-		if (cfs_rq_throttled(cfs_rq))
+		if (cfs_rq_throttled(cfs_rq)) {
+			x80_stock_dequeue_svp_task(rq, p);
 			goto dequeue_throttle;
+		}
 
 		/* Don't dequeue parent if it has other entities besides us */
 		if (cfs_rq->load.weight) {
@@ -5701,6 +5735,8 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		flags |= DEQUEUE_SLEEP;
 	}
 
+	x80_stock_qos_running_stat_record(p);
+	x80_stock_dequeue_svp_task(rq, p);
 	trace_android_rvh_dequeue_task_fair(rq, p, flags);
 	for_each_sched_entity(se) {
 		cfs_rq = cfs_rq_of(se);
@@ -7120,6 +7156,14 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 
 	find_matching_se(&se, &pse);
 	update_curr(cfs_rq_of(se));
+	if (READ_ONCE(rsc_cpu_qos_enable)) {
+		int qos_preempt = rsc_qos_preempt_check(curr, p);
+
+		if (!qos_preempt)
+			return;
+		if (qos_preempt > 0)
+			goto preempt;
+	}
 	trace_android_rvh_check_preempt_wakeup(rq, p, &preempt, &nopreempt,
 			wake_flags, se, pse, next_buddy_marked, sysctl_sched_wakeup_granularity);
 	if (preempt)
@@ -7218,6 +7262,7 @@ again:
 	} while (cfs_rq);
 
 	p = task_of(se);
+	x80_stock_qos_pick_next(rq, &p, &se);
 	trace_android_rvh_replace_next_task_fair(rq, &p, &se, &repick, false, prev);
 	/*
 	 * Since we haven't yet done put_prev_entity and if the selected task
@@ -7260,11 +7305,13 @@ simple:
 
 	do {
 		se = pick_next_entity(cfs_rq, NULL);
-		set_next_entity(cfs_rq, se);
 		cfs_rq = group_cfs_rq(se);
 	} while (cfs_rq);
 
 	p = task_of(se);
+	x80_stock_qos_pick_next(rq, &p, &se);
+	for_each_sched_entity(se)
+		set_next_entity(cfs_rq_of(se), se);
 
 done: __maybe_unused;
 #ifdef CONFIG_SMP

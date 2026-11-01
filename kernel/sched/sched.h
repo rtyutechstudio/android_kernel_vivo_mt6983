@@ -1087,6 +1087,9 @@ struct rq {
 	ANDROID_KABI_RESERVE(4);
 };
 
+/* External MTK scheduler ABI; preserve the CFS bandwidth static key. */
+extern int cfs_rq_throttled(struct cfs_rq *cfs_rq);
+
 #ifdef CONFIG_FAIR_GROUP_SCHED
 
 /* CPU runqueue to which this cfs_rq is attached */

@@ -36,3 +36,15 @@ obj-$(CONFIG_CPU_FREQ_GOV_SCHEDUTIL) += cpufreq_schedutil.o
 obj-$(CONFIG_MEMBARRIER) += membarrier.o
 obj-$(CONFIG_CPU_ISOLATION) += isolation.o
 obj-$(CONFIG_PSI) += psi.o
+
+# Recovered stock QoS statistic storage (source restoration).
+obj-y += x80_stock_qos_counters.o
+
+obj-y += x80_stock_qos_enqueue.o x80_stock_qos_knobs.o x80_stock_qos_trace_owner.o
+obj-y += x80_stock_dynamic_svp.o x80_stock_dynamic_svp_globals.o
+obj-y += x80_stock_qos_control.o
+
+obj-y += x80_stock_qos_balance_globals.o
+obj-y += x80_stock_qos_tick_counters.o x80_stock_tick_controls.o x80_stock_surface_identity.o
+obj-y += x80_stock_qos_bandwidth.o x80_stock_qos_pick.o x80_stock_rsc_systrace.o
+obj-y += x80_stock_qos_identity.o x80_stock_qos_knob_controls.o

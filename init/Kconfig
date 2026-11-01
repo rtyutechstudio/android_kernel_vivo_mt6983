@@ -2414,3 +2414,18 @@ config ARCH_HAS_SYSCALL_WRAPPER
 	def_bool n
 
 source "init/Kconfig.gki"
+
+# SPDX-License-Identifier: GPL-2.0
+# Source from the genuine kernel Kconfig at integration time.
+# Deliberately hidden/unselectable until the whole distinct legacy UI owner
+# (PR_SET_NAME refs, boost/restore, affinity/RT policy and signal/exit cleanup)
+# is supplied. This does not disable generic SVP/QoS or bandwidth defaults.
+config VIVO_X80_UI_BOOST
+	bool
+	depends on SMP && CPUSETS && CGROUP_SCHED && HIGH_RES_TIMERS
+	default n
+	help
+	  Legacy Vivo launcher UI critical-path boost subsystem. The finite
+	  #16 QoS restoration does not implement that independent owner, so this
+	  option has no prompt and remains off. QoS's normal task levels,
+	  runqueue list, bandwidth timer and scheduler preemption remain active.
